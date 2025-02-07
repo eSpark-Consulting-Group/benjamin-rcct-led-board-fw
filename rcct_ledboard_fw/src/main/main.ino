@@ -1,5 +1,7 @@
 #include "BLEDevice.h"
 #include "WiFi.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 // Define the UUIDs for the custom service and characteristic
 #define WIFI_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -19,7 +21,7 @@ BLEAdvertData scndata;
 // Variables to store Wi-Fi credentials
 String wifiSsid, wifiPassword;
 bool credentialsReceived = false;
-bool printflag = true;
+
 
 // Function to parse JSON and extract SSID and Password
 void parseWiFiCredentials(const String& jsonData) {
@@ -34,7 +36,7 @@ void parseWiFiCredentials(const String& jsonData) {
     if (ssidStart != -1 && ssidEnd != -1 && passStart != -1 && passEnd != -1) {
         wifiSsid = jsonData.substring(ssidStart, ssidEnd);
         wifiPassword = jsonData.substring(passStart, passEnd);
-        credentialsReceived = true;
+        
 
         Serial.print("Parsed SSID: ");
         Serial.println(wifiSsid);
@@ -47,6 +49,7 @@ void parseWiFiCredentials(const String& jsonData) {
 
 // Callback for when Wi-Fi credentials are written
 void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID) {
+    credentialsReceived = true;
     Serial.print("Wi-Fi Credentials written by connection ");
     Serial.println(connID);
 
@@ -62,9 +65,9 @@ void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID) {
 
 // Function to attempt Wi-Fi connection (Restored to Your Original Version)
 void attemptWiFiConnection() {
-    if (printflag) {
+
         Serial.println("Connecting to Wi-Fi...");
-    }
+    
 
     char ssid_buf[wifiSsid.length() + 1];
     char pass_buf[wifiPassword.length() + 1];
@@ -73,30 +76,43 @@ void attemptWiFiConnection() {
     strcpy(pass_buf, wifiPassword.c_str());
 
     WiFi.begin(ssid_buf, pass_buf);
-    wifiSsid = wifiPassword = "";
+    // wifiSsid = wifiPassword = "";
 
     unsigned long startAttemptTime = millis();
     const unsigned long timeout = 15000; // 15 seconds timeout
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
-        delay(500);
+        vTaskDelay(pdMS_TO_TICKS(500)); 
         Serial.print(".");
     }
 
-    if (WiFi.status() == WL_CONNECTED && printflag) {
+    if (WiFi.status() == WL_CONNECTED) {
         Serial.println("\nWi-Fi Connected!");
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
-        printflag = false;
-    } else if (printflag) {
-        Serial.println("\nFailed to connect to Wi-Fi.");
+
         credentialsReceived = false;
+
+    } else {
+        Serial.println("\nFailed to connect to Wi-Fi.");
+    }
+}
+
+void WiFiTask(void *pvParameters) {
+    while (1) {
+        if (credentialsReceived) {
+            attemptWiFiConnection();
+        } else if (WiFi.status() != WL_CONNECTED) {
+            attemptWiFiConnection();
+        }
+        printCurrentNet();
+        vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds
     }
 }
 
 void setup() {
     Serial.begin(115200);
-
+    
     // Configure advertisement data
     advdata.addFlags();
     advdata.addCompleteName("RCCT_LED_BRD");
@@ -120,6 +136,7 @@ void setup() {
 
     // Start BLE peripheral
     BLE.beginPeripheral();
+    xTaskCreate(WiFiTask, "WiFiTask", 4096, NULL, 1, NULL);
 
     Serial.println("BLE Peripheral started. Waiting for Wi-Fi credentials...");
 }
@@ -158,10 +175,5 @@ void printCurrentNet() {
 }
 
 void loop() {
-    if (credentialsReceived) {
-        attemptWiFiConnection();
-    }
-    printCurrentNet();
-    delay(1000);
-}
 
+}
