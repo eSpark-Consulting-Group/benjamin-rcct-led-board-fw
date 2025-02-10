@@ -2,6 +2,12 @@
 #include "WiFi.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include <FlashMemory.h>
+
+
+#define FLASH_SSID_OFFSET 0x0000
+#define FLASH_PASS_OFFSET 0x0100
+#define FLASH_MAX_LEN 64  // Adjust according to max SSID/password length
 
 // Define the UUIDs for the custom service and characteristic
 #define WIFI_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -42,6 +48,8 @@ void parseWiFiCredentials(const String& jsonData) {
         Serial.println(wifiSsid);
         Serial.print("Parsed Password: ");
         Serial.println(wifiPassword);
+        saveWiFiCredentials();
+
     } else {
         Serial.println("Failed to parse JSON!");
     }
@@ -60,15 +68,58 @@ void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID) {
         Serial.println(jsonData);
 
         parseWiFiCredentials(jsonData);
+
     }
 }
+
+void saveWiFiCredentials() {
+    Serial.println("Saving Wi-Fi credentials to flash...");
+
+    // Ensure strings fit in buffer
+    if (wifiSsid.length() >= FLASH_MAX_LEN || wifiPassword.length() >= FLASH_MAX_LEN) {
+        Serial.println("Error: SSID or Password too long!");
+        return;
+    }
+
+    memset(FlashMemory.buf, 0, FLASH_MAX_LEN * 2); // Clear previous data
+    strcpy((char *)(FlashMemory.buf + FLASH_SSID_OFFSET), wifiSsid.c_str());
+    strcpy((char *)(FlashMemory.buf + FLASH_PASS_OFFSET), wifiPassword.c_str());
+
+    FlashMemory.update();
+    Serial.println("Wi-Fi credentials saved.");
+}
+
+void loadWiFiCredentials() {
+    Serial.println("Loading Wi-Fi credentials from flash...");
+
+    char ssidBuf[FLASH_MAX_LEN];
+    char passBuf[FLASH_MAX_LEN];
+
+    strcpy(ssidBuf, (char *)(FlashMemory.buf + FLASH_SSID_OFFSET));
+    strcpy(passBuf, (char *)(FlashMemory.buf + FLASH_PASS_OFFSET));
+
+    if (strlen(ssidBuf) > 0 && strlen(passBuf) > 0) {
+        wifiSsid = String(ssidBuf);
+        wifiPassword = String(passBuf);
+
+        Serial.print("Loaded SSID: ");
+        Serial.println(wifiSsid);
+        Serial.print("Loaded Password: ");
+        Serial.println(wifiPassword);
+
+        // Attempt connection
+        // attemptWiFiConnection();
+    } else {
+        Serial.println("No saved Wi-Fi credentials found.");
+    }
+}
+
 
 // Function to attempt Wi-Fi connection (Restored to Your Original Version)
 void attemptWiFiConnection() {
 
-        Serial.println("Connecting to Wi-Fi...");
+    Serial.println("Connecting to Wi-Fi...");
     
-
     char ssid_buf[wifiSsid.length() + 1];
     char pass_buf[wifiPassword.length() + 1];
 
@@ -79,7 +130,7 @@ void attemptWiFiConnection() {
     // wifiSsid = wifiPassword = "";
 
     unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 15000; // 15 seconds timeout
+    const unsigned long timeout = 10000; // 15 seconds timeout
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
         vTaskDelay(pdMS_TO_TICKS(500)); 
@@ -99,19 +150,27 @@ void attemptWiFiConnection() {
 }
 
 void WiFiTask(void *pvParameters) {
+    vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds           
     while (1) {
-        if (credentialsReceived) {
+        if (credentialsReceived || WiFi.status() != WL_CONNECTED) {
             attemptWiFiConnection();
-        } else if (WiFi.status() != WL_CONNECTED) {
-            attemptWiFiConnection();
-        }
+        }        
         printCurrentNet();
-        vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Check every 5 seconds           
+
     }
 }
 
 void setup() {
     Serial.begin(115200);
+
+        // Initialize Flash Memory
+    FlashMemory.begin(FLASH_MEMORY_APP_BASE, 0x1000);
+    FlashMemory.read();
+    loadWiFiCredentials();
+
+
+    // Load saved Wi-Fi credentials
     
     // Configure advertisement data
     advdata.addFlags();
