@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <FlashMemory.h>
+#include <Arduino_JSON.h>
 
 
 #define FLASH_SSID_OFFSET 0x0000
@@ -12,12 +13,14 @@
 // Define the UUIDs for the custom service and characteristic
 #define WIFI_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define WIFI_CREDENTIALS_CHAR_UUID "d752c5fb-1380-4cd5-b0ef-cac7d72cff20"
+#define DEVICE_STATUS_CHAR_UUID    "e23a3e8c-1d8b-4b5a-88c9-fc3e2d5cbb23"
 
 #define STRING_BUF_SIZE 180
 
 // Create the BLE service and characteristic
 BLEService WifiService(WIFI_SERVICE_UUID);
-BLECharacteristic WifiCredentialsChar(WIFI_CREDENTIALS_CHAR_UUID);
+BLECharacteristic WifiCredentialsChar(WIFI_CREDENTIALS_CHAR_UUID);  // wifi creds input
+BLECharacteristic DeviceStatusChar(DEVICE_STATUS_CHAR_UUID);        // device status output
 
 
 
@@ -29,31 +32,29 @@ String wifiSsid, wifiPassword;
 bool credentialsReceived = false;
 
 
-// Function to parse JSON and extract SSID and Password
 void parseWiFiCredentials(const String& jsonData) {
-    int ssidStart = jsonData.indexOf("\"ssid\"") + 7;  // Move to after "ssid"
-    ssidStart = jsonData.indexOf("\"", ssidStart) + 1; // Find opening quote
-    int ssidEnd = jsonData.indexOf("\"", ssidStart);   // Find closing quote
+    JSONVar json = JSON.parse(jsonData);
 
-    int passStart = jsonData.indexOf("\"password\"") + 11; // Move to after "password"
-    passStart = jsonData.indexOf("\"", passStart) + 1;     // Find opening quote
-    int passEnd = jsonData.indexOf("\"", passStart);       // Find closing quote
+    if (JSON.typeof(json) == "undefined") {
+        Serial.println("Failed to parse JSON!");
+        return;
+    }
 
-    if (ssidStart != -1 && ssidEnd != -1 && passStart != -1 && passEnd != -1) {
-        wifiSsid = jsonData.substring(ssidStart, ssidEnd);
-        wifiPassword = jsonData.substring(passStart, passEnd);
-        
+    if (json.hasOwnProperty("ssid") && json.hasOwnProperty("password")) {
+        wifiSsid = (const char*)json["ssid"];
+        wifiPassword = (const char*)json["password"];
 
         Serial.print("Parsed SSID: ");
         Serial.println(wifiSsid);
         Serial.print("Parsed Password: ");
         Serial.println(wifiPassword);
-        saveWiFiCredentials();
 
+        saveWiFiCredentials();
     } else {
-        Serial.println("Failed to parse JSON!");
+        Serial.println("JSON does not contain SSID or Password!");
     }
 }
+
 
 // Callback for when Wi-Fi credentials are written
 void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID) {
@@ -149,16 +150,52 @@ void attemptWiFiConnection() {
     }
 }
 
+void updateDeviceStatus() {
+    uint8_t mac[6];  // Array to hold MAC address bytes
+    WiFi.macAddress(mac);  // Get MAC address
+
+    // Convert MAC address to a human-readable string
+    char macStr[18];  // "XX:XX:XX:XX:XX:XX" + null terminator
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", 
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+    // Create JSON object
+    JSONVar deviceStatus;
+    deviceStatus["RCCT MAC ADDRESS "] = macStr;
+    deviceStatus["RCCT WiFi STATUS"] = WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected";
+    deviceStatus["BLE DEVICE"] = BLE.connected() ? "Connected" : "Disconnected";
+
+    
+    // Convert JSON to String
+    String jsonString = JSON.stringify(deviceStatus);
+
+    // Write to BLE characteristic
+    DeviceStatusChar.writeString(jsonString.c_str());
+
+    Serial.print("Device Status Updated: ");
+    Serial.println(jsonString);
+}
+
+
 void WiFiTask(void *pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds           
     while (1) {
+        // updateDeviceStatus();
         if (credentialsReceived || WiFi.status() != WL_CONNECTED) {
             attemptWiFiConnection();
-        }        
+        } 
         printCurrentNet();
         vTaskDelay(pdMS_TO_TICKS(1000));  // Check every 5 seconds           
 
     }
+}
+
+void status_update_task(void *pvParameters) {
+    while(1){
+      updateDeviceStatus();       
+      vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds           
+    }
+
 }
 
 void setup() {
@@ -183,7 +220,14 @@ void setup() {
     WifiCredentialsChar.setWriteCallback(onCredentialsWrite);
     WifiCredentialsChar.setBufferLen(STRING_BUF_SIZE);
 
+      // Configure Device Status characteristic
+    DeviceStatusChar.setReadProperty(true);
+    DeviceStatusChar.setReadPermissions(GATT_PERM_READ);
+    DeviceStatusChar.setBufferLen(STRING_BUF_SIZE);
+
+
     // Add characteristic to the service
+    WifiService.addCharacteristic(DeviceStatusChar);
     WifiService.addCharacteristic(WifiCredentialsChar);
 
     // Initialize BLE
@@ -195,7 +239,8 @@ void setup() {
 
     // Start BLE peripheral
     BLE.beginPeripheral();
-    xTaskCreate(WiFiTask, "WiFiTask", 4096, NULL, 1, NULL);
+    xTaskCreate(WiFiTask, "WiFiTask", 4096, NULL, 2, NULL);
+    xTaskCreate(status_update_task, "status_update_task", 4096, NULL, 1, NULL);
 
     Serial.println("BLE Peripheral started. Waiting for Wi-Fi credentials...");
 }
