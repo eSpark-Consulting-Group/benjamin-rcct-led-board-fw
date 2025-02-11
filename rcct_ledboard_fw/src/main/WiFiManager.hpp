@@ -1,0 +1,24 @@
+#pragma once
+
+#include "WiFi.h"
+#include <FlashMemory.h>
+#include <Arduino_JSON.h>
+#include "globflags.hpp"
+
+
+
+#define FLASH_SSID_OFFSET 0x0000
+#define FLASH_PASS_OFFSET 0x0100
+#define FLASH_MAX_LEN 64  // Adjust according to max SSID/password length
+
+
+
+class WiFiManager {
+public:
+    static void loadWiFiCredentials();
+    static void saveWiFiCredentials();
+    static void attemptWiFiConnection();
+    static void parseWiFiCredentials(const String& jsonData);
+};
+
+
