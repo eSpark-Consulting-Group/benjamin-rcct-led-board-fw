@@ -3,7 +3,9 @@
 #include "WiFi.h"
 #include <FlashMemory.h>
 #include <Arduino_JSON.h>
+#include "BLEManager.hpp"
 #include "globflags.hpp"
+#include "MQTTManager.hpp"
 
 
 

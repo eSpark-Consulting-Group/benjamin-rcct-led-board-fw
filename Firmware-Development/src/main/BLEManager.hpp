@@ -15,10 +15,11 @@
 class BLEManager {
   public:
       // BLEManager();
-      void init();
-      void start();
-      void updateDeviceStatus();
+      static void init();
+      static void start();
+      static void updateDeviceStatus();
       static void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID);
+
 
   // private:
   //     BLEService wifiService;

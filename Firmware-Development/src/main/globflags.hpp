@@ -2,4 +2,4 @@
 
 
 extern bool credentialsReceived;
-
+extern char macStr[18];

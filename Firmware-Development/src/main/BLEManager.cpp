@@ -38,11 +38,12 @@ void BLEManager::init() {
     BLE.beginPeripheral();
 }
 
+
 void BLEManager::updateDeviceStatus() {
     uint8_t mac[6];
     WiFi.macAddress(mac);
 
-    char macStr[18];
+    // char macStr[18];
     snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
@@ -50,7 +51,7 @@ void BLEManager::updateDeviceStatus() {
     deviceStatus["RCCT MAC ADDRESS "] = macStr;
     deviceStatus["RCCT WiFi STATUS"] = WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected";
     deviceStatus["WiFi SSID"] = WiFi.SSID();
-    deviceStatus["BLE DEVICE"] = BLE.connected() ? "Connected" : "Disconnected";
+    // deviceStatus["BLE DEVICE"] = BLE.connected() ? "Connected" : "Disconnected";
     deviceStatus["MQTT SERVER"] = MQTTManager::isConnected() ?  "Connected" : "Disconnected";
 
     String jsonString = JSON.stringify(deviceStatus);

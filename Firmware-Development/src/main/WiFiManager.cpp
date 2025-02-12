@@ -46,6 +46,7 @@ void WiFiManager::parseWiFiCredentials(const String& jsonData) {
 }
 
 void WiFiManager::attemptWiFiConnection() {
+    
     Serial.println("Connecting to Wi-Fi...");
     
     char ssid_buf[wifiSsid.length() + 1];
@@ -58,14 +59,16 @@ void WiFiManager::attemptWiFiConnection() {
     // wifiSsid = wifiPassword = "";
 
     unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 10000; // 15 seconds timeout
+    const unsigned long timeout = 5000; // 15 seconds timeout
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
+
         vTaskDelay(pdMS_TO_TICKS(500)); 
         Serial.print(".");
     }
 
     if (WiFi.status() == WL_CONNECTED) {
+        BLEManager::updateDeviceStatus();
         Serial.println("\nWi-Fi Connected!");
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
@@ -73,6 +76,10 @@ void WiFiManager::attemptWiFiConnection() {
         credentialsReceived = false;
 
     } else {
+        MQTTManager::disconnect();       
+        BLEManager::updateDeviceStatus();   
         Serial.println("\nFailed to connect to Wi-Fi.");
     }
 }
+
+
