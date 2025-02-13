@@ -1,6 +1,7 @@
 #include "BLEManager.hpp"
 
 
+char macStr[18];
 
 
 BLEService WifiService(WIFI_SERVICE_UUID);
@@ -20,7 +21,7 @@ void BLEManager::init() {
 
     WifiCredentialsChar.setWriteProperty(true);
     WifiCredentialsChar.setWritePermissions(GATT_PERM_WRITE);
-    WifiCredentialsChar.setWriteCallback(onCredentialsWrite);
+    WifiCredentialsChar.setWriteCallback(ble_write_callback);
     WifiCredentialsChar.setBufferLen(180);
 
     DeviceStatusChar.setReadProperty(true);
@@ -38,6 +39,10 @@ void BLEManager::init() {
     BLE.beginPeripheral();
 }
 
+char* BLEManager::getmacStr() {
+    // char macStr[18] ;
+    return macStr;
+}
 
 void BLEManager::updateDeviceStatus() {
     uint8_t mac[6];
@@ -47,31 +52,20 @@ void BLEManager::updateDeviceStatus() {
     snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-    JSONVar deviceStatus;
-    deviceStatus["RCCT MAC ADDRESS "] = macStr;
-    deviceStatus["RCCT WiFi STATUS"] = WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected";
-    deviceStatus["WiFi SSID"] = WiFi.SSID();
-    // deviceStatus["BLE DEVICE"] = BLE.connected() ? "Connected" : "Disconnected";
-    deviceStatus["MQTT SERVER"] = MQTTManager::isConnected() ?  "Connected" : "Disconnected";
 
-    String jsonString = JSON.stringify(deviceStatus);
+    String jsonString = JSONManager::devicestatus_json_construction();
+
     DeviceStatusChar.writeString(jsonString.c_str());
-
-    Serial.print("Device Status Updated: ");
+    Serial.print("RCCT Status Updated: ");
     Serial.println(jsonString);
 }
 
-void BLEManager::onCredentialsWrite(BLECharacteristic* chr, uint8_t connID) {
-     credentialsReceived = true;
-    Serial.print("Wi-Fi Credentials written by connection ");
+void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     Serial.println(connID);
 
     if (chr->getDataLen() > 0) {
-        String jsonData = chr->readString();
-        jsonData.trim();
-        Serial.print("Received JSON: ");
-        Serial.println(jsonData);
+        JSONManager::parse_ble_input(chr->readString()); //BLE DATA PARSE
 
-        WiFiManager::parseWiFiCredentials(jsonData);
+
     }
 }

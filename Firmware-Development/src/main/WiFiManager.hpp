@@ -2,9 +2,7 @@
 
 #include "WiFi.h"
 #include <FlashMemory.h>
-#include <Arduino_JSON.h>
 #include "BLEManager.hpp"
-#include "globflags.hpp"
 #include "MQTTManager.hpp"
 
 
@@ -18,9 +16,9 @@
 class WiFiManager {
 public:
     static void loadWiFiCredentials();
-    static void saveWiFiCredentials();
     static void attemptWiFiConnection();
-    static void parseWiFiCredentials(const String& jsonData);
+    static bool credrecievedFlag( bool write , bool write_val ,bool read );
+
 };
 
 

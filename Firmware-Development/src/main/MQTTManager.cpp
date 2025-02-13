@@ -17,6 +17,10 @@ char controltopic[50] = "led/control/";
 char devicetopic[50] = "led/device/";
 // char devicetopic_payload[] = "hello world";
 
+String  color ;
+uint16_t temperature ;
+uint16_t brightness;
+
 
 String fileBuffer = "";
 int totalChunks = 0;
@@ -26,13 +30,15 @@ uint8_t brightness1;
 String test;
 
 void conc(){
-    if (strlen(controltopic) + strlen(macStr) < sizeof(controltopic)) {
-        strcat(controltopic, macStr);
+
+    char *macStrrecived = BLEManager::getmacStr();    
+    if (strlen(controltopic) + strlen(macStrrecived) < sizeof(controltopic)) {
+        strcat(controltopic, macStrrecived);
     } else {
         Serial.println("Buffer overflow risk!");
     }
-    if (strlen(devicetopic) + strlen(macStr) < sizeof(devicetopic)) {
-        strcat(devicetopic, macStr);
+    if (strlen(devicetopic) + strlen(macStrrecived) < sizeof(devicetopic)) {
+        strcat(devicetopic, macStrrecived);
     } else {
         Serial.println("Buffer overflow risk!");
     }
@@ -52,7 +58,7 @@ void MQTTManager::disconnect(){
   client.disconnect();
 }
 
-void MQTTManager::publish_JSON( bool Power_state , uint8_t brightness , String colour_code , String effect , uint16_t speed){
+void MQTTManager::publish_JSON( bool Power_state , uint8_t brightness , String colour_code , String effect , uint8_t speed){
       JSONVar led_data;
       led_data["Power"] = Power_state;
       led_data["Brightness"] = brightness;
@@ -101,7 +107,7 @@ bool MQTTManager::isConnected() {
 }
 
 void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
-Serial.print("Message arrived [");
+    Serial.print("Message arrived [");  
     Serial.print(topic);
     Serial.print("] ");
     
@@ -165,5 +171,20 @@ Serial.print("Message arrived [");
             }
             Serial.println("Parsed JSON:");
             Serial.println(JSON.stringify(json));
+            if (json.hasOwnProperty("color") && json.hasOwnProperty("temperature") && json.hasOwnProperty("brightness")) {
+              color = (const char *)json["color"];
+              temperature = (uint32_t)json["temperature"];
+              brightness = (uint32_t)json["brightness"];
+              Serial.print("Parsed color: ");
+              Serial.println(color);
+              Serial.print("Parsed temperature: ");
+              Serial.println(temperature);
+              Serial.print("Parsed brightness: ");
+              Serial.println(brightness);
+
+            }
+
+    
+            
     }
 }

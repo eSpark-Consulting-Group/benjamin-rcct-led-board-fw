@@ -4,8 +4,9 @@
 #include "BLEDevice.h"
 #include "WiFiManager.hpp"
 #include "MQTTManager.hpp"
-#include <Arduino_JSON.h>
-#include "globflags.hpp"
+#include "JSONManager.hpp"
+
+
 
 #define WIFI_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define WIFI_CREDENTIALS_CHAR_UUID "d752c5fb-1380-4cd5-b0ef-cac7d72cff20"
@@ -14,17 +15,12 @@
 
 class BLEManager {
   public:
-      // BLEManager();
       static void init();
       static void start();
       static void updateDeviceStatus();
-      static void onCredentialsWrite(BLECharacteristic* chr, uint8_t connID);
+      static void ble_write_callback(BLECharacteristic* chr, uint8_t connID);
+      static  char* getmacStr();
 
-
-  // private:
-  //     BLEService wifiService;
-  //     BLECharacteristic wifiCredentialsChar;
-  //     BLECharacteristic deviceStatusChar;
   };
 
 

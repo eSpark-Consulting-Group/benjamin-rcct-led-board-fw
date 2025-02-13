@@ -2,6 +2,7 @@
 
 String wifiSsid, wifiPassword;
 
+bool credentialsReceived=false;
 
 void WiFiManager::loadWiFiCredentials() {
     Serial.println("Loading Wi-Fi credentials from flash...");
@@ -18,32 +19,16 @@ void WiFiManager::loadWiFiCredentials() {
     }
 }
 
-void WiFiManager::saveWiFiCredentials() {
-    if (wifiSsid.length() >= 64 || wifiPassword.length() >= 64) {
-        Serial.println("Error: SSID or Password too long!");
-        return;
+bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
+    if(write == true){
+        credentialsReceived= write_val;
+    }
+    else if(read == true){
+      return(credentialsReceived);
     }
 
-    memset(FlashMemory.buf, 0, 128);
-    strcpy((char *)(FlashMemory.buf + FLASH_SSID_OFFSET), wifiSsid.c_str());
-    strcpy((char *)(FlashMemory.buf + FLASH_PASS_OFFSET), wifiPassword.c_str());
-
-    FlashMemory.update();
-    Serial.println("Wi-Fi credentials saved.");
 }
 
-void WiFiManager::parseWiFiCredentials(const String& jsonData) {
-    JSONVar json = JSON.parse(jsonData);
-
-    if (json.hasOwnProperty("ssid") && json.hasOwnProperty("password")) {
-        wifiSsid = (const char*)json["ssid"];
-        wifiPassword = (const char*)json["password"];
-
-        Serial.print("Parsed SSID: ");
-        Serial.println(wifiSsid);
-        saveWiFiCredentials();
-    }
-}
 
 void WiFiManager::attemptWiFiConnection() {
     
@@ -72,7 +57,6 @@ void WiFiManager::attemptWiFiConnection() {
         Serial.println("\nWi-Fi Connected!");
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
-
         credentialsReceived = false;
 
     } else {
