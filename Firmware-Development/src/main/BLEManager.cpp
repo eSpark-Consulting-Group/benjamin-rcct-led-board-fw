@@ -53,7 +53,7 @@ void BLEManager::updateDeviceStatus() {
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
 
-    String jsonString = JSONManager::devicestatus_json_construction();
+    String jsonString = JSONManager::make_ble_JSON();
 
     DeviceStatusChar.writeString(jsonString.c_str());
     Serial.print("RCCT Status Updated: ");
@@ -64,7 +64,7 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     Serial.println(connID);
 
     if (chr->getDataLen() > 0) {
-        JSONManager::parse_ble_input(chr->readString()); //BLE DATA PARSE
+        JSONManager::parse_ble_JSON(chr->readString()); //BLE DATA PARSE
 
 
     }

@@ -11,20 +11,24 @@
 
 
 
-
-BLEManager bleManager;
-
 void WiFiTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));
     while (1) {
+
         if ((WiFiManager::credrecievedFlag(false ,false ,true) == true) || WiFi.status() != WL_CONNECTED) {
-            WiFiManager::loadWiFiCredentials();
-            WiFiManager::attemptWiFiConnection();
+            WiFiManager::attemptWiFiConnection() ;
         }
+
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
             MQTTManager::attemptConnection();
         }
-        MQTTManager::publish_JSON( true , 300 , "#FFFFF" , "Solid" , 50);
+
+        if ((single_input_pwm::single_input_recieved_flag(false,false,true) == true)) {
+            single_input_pwm::config_bright_color_temp();
+        }
+
+              
+        MQTTManager::publish_JSON();
         MQTTManager::loop();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -45,7 +49,8 @@ void setup() {
     FlashMemory.begin(FLASH_MEMORY_APP_BASE, 0x1000);
     FlashMemory.read();
 
-    bleManager.init();
+    
+    BLEManager::init() ;
     MQTTManager::init();
     single_input_pwm::PWM_init();
 

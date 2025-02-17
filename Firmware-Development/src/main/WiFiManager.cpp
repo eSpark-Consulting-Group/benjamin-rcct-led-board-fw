@@ -4,20 +4,7 @@ String wifiSsid, wifiPassword;
 
 bool credentialsReceived=false;
 
-void WiFiManager::loadWiFiCredentials() {
-    Serial.println("Loading Wi-Fi credentials from flash...");
 
-    char ssidBuf[64];
-    char passBuf[64];
-
-    strcpy(ssidBuf, (char *)(FlashMemory.buf + FLASH_SSID_OFFSET));
-    strcpy(passBuf, (char *)(FlashMemory.buf + FLASH_PASS_OFFSET));
-
-    if (strlen(ssidBuf) > 0 && strlen(passBuf) > 0) {
-        wifiSsid = String(ssidBuf);
-        wifiPassword = String(passBuf);
-    }
-}
 
 bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
     if(write == true){
@@ -31,7 +18,9 @@ bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
 
 
 void WiFiManager::attemptWiFiConnection() {
-    
+      
+    flashman::load_wifi_creds(wifiSsid , wifiPassword);
+
     Serial.println("Connecting to Wi-Fi...");
     
     char ssid_buf[wifiSsid.length() + 1];

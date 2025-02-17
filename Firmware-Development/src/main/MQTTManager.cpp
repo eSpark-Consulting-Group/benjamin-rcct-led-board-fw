@@ -1,5 +1,4 @@
 #include "MQTTManager.hpp"
-#define MAC_ID 2323
 
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
@@ -17,17 +16,14 @@ char controltopic[50] = "led/control/";
 char devicetopic[50] = "led/device/";
 // char devicetopic_payload[] = "hello world";
 
-String  color ;
-uint16_t temperature ;
-uint16_t brightness;
 
 
 String fileBuffer = "";
 int totalChunks = 0;
 int receivedChunks = 0;
-uint8_t brightness1;
 
-String test;
+
+
 
 void conc(){
 
@@ -58,18 +54,12 @@ void MQTTManager::disconnect(){
   client.disconnect();
 }
 
-void MQTTManager::publish_JSON( bool Power_state , uint8_t brightness , String colour_code , String effect , uint8_t speed){
-      JSONVar led_data;
-      led_data["Power"] = Power_state;
-      led_data["Brightness"] = brightness;
-      led_data["color"] = colour_code;
-      led_data["effect"] = effect;
-      led_data["speed"] = speed;
+void MQTTManager::publish_JSON(){
 
-      String led_data_string = JSON.stringify(led_data);
+      String publishable_data = JSONManager::make_mqtt_JSON();
          // Publish JSON string over MQTT
-      if (client.publish(devicetopic, led_data_string.c_str())) {
-          Serial.println("JSON message sent: " + led_data_string);
+      if (client.publish(devicetopic, publishable_data.c_str())) {
+          Serial.println("JSON message sent: " + publishable_data);
       } else {
           Serial.println("Failed to send JSON message");
       }
@@ -107,7 +97,7 @@ bool MQTTManager::isConnected() {
 }
 
 void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
-    Serial.print("Message arrived [");  
+    Serial.print("MQTT JSON recieved [");  
     Serial.print(topic);
     Serial.print("] ");
     
@@ -138,24 +128,8 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     else if (String(topic) == "controller/filetransfer/complete") {
         if (receivedChunks == totalChunks) {
             Serial.println("All chunks received. Parsing JSON...");
-
-            JSONVar json = JSON.parse(fileBuffer);
-            if (JSON.typeof(json) == "undefined") {
-                Serial.println("Failed to parse JSON!");
-                return;
-            }
-
-            Serial.println("Parsed JSON:");
-            Serial.println(JSON.stringify(json));
-            test = (const char*)json["test_param"];        
-
-            brightness1 = (uint8_t)(int)json["brightness1"];
-
-            Serial.print("brightness1: ");
-            Serial.println(brightness1);
-            Serial.print("testing: ");
-            Serial.println(test);
-
+ 
+            JSONManager::parse_mqtt_JSON(fileBuffer);
             // TODO: Handle the parsed JSON data
         } else {
             Serial.println("Error: Incomplete file transfer!");
@@ -163,28 +137,7 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
 
     }
     else if(String(topic) == controltopic ){
-            // fileBuffer += message;  // Append chunk
-            JSONVar json = JSON.parse(message);
-            if (JSON.typeof(json) == "undefined") {
-                Serial.println("Failed to parse JSON!");
-                return;
-            }
-            Serial.println("Parsed JSON:");
-            Serial.println(JSON.stringify(json));
-            if (json.hasOwnProperty("color") && json.hasOwnProperty("temperature") && json.hasOwnProperty("brightness")) {
-              color = (const char *)json["color"];
-              temperature = (uint32_t)json["temperature"];
-              brightness = (uint32_t)json["brightness"];
-              Serial.print("Parsed color: ");
-              Serial.println(color);
-              Serial.print("Parsed temperature: ");
-              Serial.println(temperature);
-              Serial.print("Parsed brightness: ");
-              Serial.println(brightness);
-
-            }
-
-    
-            
+            JSONManager::parse_mqtt_JSON(message);
+           
     }
 }
