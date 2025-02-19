@@ -4,9 +4,16 @@
 char macStr[18];
 
 
+
+
+
+// wifi config service
 BLEService WifiService(WIFI_SERVICE_UUID);
 BLECharacteristic WifiCredentialsChar(WIFI_CREDENTIALS_CHAR_UUID);  // wifi creds input
 BLECharacteristic DeviceStatusChar(DEVICE_STATUS_CHAR_UUID);        // device status output
+BLECharacteristic AvailableSsidChar(AVAILABLE_SSID_CHAR_UUID);        // device status output
+
+
 
 BLEAdvertData advdata;
 BLEAdvertData scndata;
@@ -28,6 +35,11 @@ void BLEManager::init() {
     DeviceStatusChar.setReadPermissions(GATT_PERM_READ);
     DeviceStatusChar.setBufferLen(180);
 
+    AvailableSsidChar.setReadProperty(true);
+    AvailableSsidChar.setReadPermissions(GATT_PERM_READ);
+    AvailableSsidChar.setBufferLen(180);
+
+    WifiService.addCharacteristic(AvailableSsidChar);
     WifiService.addCharacteristic(DeviceStatusChar);
     WifiService.addCharacteristic(WifiCredentialsChar);
 
@@ -58,6 +70,14 @@ void BLEManager::updateDeviceStatus() {
     DeviceStatusChar.writeString(jsonString.c_str());
     Serial.print("RCCT Status Updated: ");
     Serial.println(jsonString);
+}
+
+void  BLEManager::fetchSSIDS() {
+    String jsonAvailableSsid = WiFiManager::networkScanner();
+    AvailableSsidChar.writeString(jsonAvailableSsid.c_str());
+    Serial.print("Available Networks: ");
+    Serial.println(jsonAvailableSsid);
+
 }
 
 void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {

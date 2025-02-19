@@ -10,7 +10,7 @@
 
 
 
-class flashman{
+class FlashManager{
   public:
     static void save_wifi_creds(String ssid , String pass);
     static void load_wifi_creds(String &ssid , String &pass);

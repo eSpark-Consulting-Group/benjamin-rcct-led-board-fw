@@ -3,12 +3,12 @@
 #include <Arduino.h>
 #include "pwmout_api.h"
 #include "config.hpp"
-#include "Flashman.hpp"
+
 
 typedef struct  {
-    String color ="";
-    uint16_t temperature =0;
-    uint16_t brightness=0;
+    String color = DEFAULT_COLOR;
+    uint16_t temperature = DEFAULT_TEMP;
+    uint16_t brightness= DEFAULT_BRIGHTNESS;
  
 }Config ;
 
@@ -19,16 +19,19 @@ typedef struct {
 }rgb;
 
 
-class single_input_pwm {
+class SingleInput {
   public:
 
-    static single_input_pwm& getInstance() {
-        static single_input_pwm instance;
+    static SingleInput& getInstance() {
+        static SingleInput instance;
         return instance;
     }
 
     Config config;  // Global struct instance
     rgb RGB;
+    pwmout_t pwm_red;
+    pwmout_t pwm_cool_white;
+    pwmout_t pwm_warm_white;
 
     static void PWM_init();
     static void config_bright_color_temp();
@@ -39,15 +42,15 @@ class single_input_pwm {
 
 
   private:
-    single_input_pwm() {}  // Private constructor (singleton)
+    SingleInput() {}  // Private constructor (singleton)
     static void hexToRGB(const String& hex, int& red, int& green, int& blue) ;
     static void config_brightness();
     static void config_temperature();
     static void config_color();
-
-    static pwmout_t pwm_red;
-    static pwmout_t pwm_cool_white;
-    static pwmout_t pwm_warm_white;
+    // static pwmout_t pwm_red;
+    // static pwmout_t pwm_cool_white;
+    // static pwmout_t pwm_warm_white;
+   
 
 };
 

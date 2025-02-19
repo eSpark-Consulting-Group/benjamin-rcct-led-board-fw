@@ -35,6 +35,9 @@ String JSONManager::make_mqtt_JSON(){
 
 }
 
+
+
+
 void JSONManager::parse_ble_JSON(String ble_data){
 
         String parsed_ssid,parsed_password;
@@ -56,7 +59,7 @@ void JSONManager::parse_ble_JSON(String ble_data){
                   Serial.println("Error: SSID or Password too long!");
                   return;}
 
-                  flashman::save_wifi_creds(parsed_ssid , parsed_password );
+                  FlashManager::save_wifi_creds(parsed_ssid , parsed_password );
 
               }
 
@@ -74,20 +77,21 @@ void JSONManager::parse_mqtt_JSON(String mqtt_data){
 
 
                 if (mqtt_JSON.hasOwnProperty("color") && mqtt_JSON.hasOwnProperty("temperature") && mqtt_JSON.hasOwnProperty("brightness")) {
-                    single_input_pwm::single_input_recieved_flag( true , true ,false);
-                    single_input_pwm::getInstance().config.color = (const char *)mqtt_JSON["color"];
-                    single_input_pwm::getInstance().config.temperature = (uint16_t)mqtt_JSON["temperature"];
-                    single_input_pwm::getInstance().config.brightness = (uint16_t)mqtt_JSON["brightness"];
+                    SingleInput::single_input_recieved_flag( true , true ,false);
+                    SingleInput::getInstance().config.color = (const char *)mqtt_JSON["color"];
+                    SingleInput::getInstance().config.temperature = (uint16_t)mqtt_JSON["temperature"];
+                    SingleInput::getInstance().config.brightness = (uint16_t)mqtt_JSON["brightness"];
  
                     Serial.println("Parsed Values:");
-                    Serial.println("Color: " + single_input_pwm::getInstance().config.color);
-                    Serial.println("Temperature: " + String(single_input_pwm::getInstance().config.temperature));
-                    Serial.println("Brightness: " + String(single_input_pwm::getInstance().config.brightness));
+                    Serial.println("Color: " + SingleInput::getInstance().config.color);
+                    Serial.println("Temperature: " + String(SingleInput::getInstance().config.temperature));
+                    Serial.println("Brightness: " + String(SingleInput::getInstance().config.brightness));
                     
+                    SingleInput::config_bright_color_temp();
 
-                    flashman::save_single_input_vals(single_input_pwm::getInstance().config.color , 
-                                                        single_input_pwm::getInstance().config.temperature, 
-                                                          single_input_pwm::getInstance().config.brightness);
+                    // FlashManager::save_single_input_vals(SingleInput::getInstance().config.color , 
+                    //                                     SingleInput::getInstance().config.temperature, 
+                    //                                       SingleInput::getInstance().config.brightness);
 
               }
 
@@ -95,7 +99,7 @@ void JSONManager::parse_mqtt_JSON(String mqtt_data){
 }
 
 
-
+// void JSONManager::parse_http_JSON(String mqtt_data)
 
 
 

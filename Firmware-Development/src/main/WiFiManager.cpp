@@ -16,10 +16,50 @@ bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
 
 }
 
+String WiFiManager::networkScanner(){
+    Serial.println("Scanning available networks...");
+    Serial.println("** Scan Networks **");
+    int numSsid = WiFi.scanNetworks();
+    if (numSsid == -1) {
+        Serial.println("Couldn't get a wifi connection");
+        while (true);
+    }
+
+    // print the list of networks seen:
+    Serial.print("number of available networks:");
+    Serial.println(numSsid);
+
+    String scannedSsids= "{ \"networks\": [";
+    // print the network number and name for each network found:
+
+        bool first = true;
+
+          for (int i = 0; i < numSsid; i++) {
+              String ssid = WiFi.SSID(i);
+              if (! WiFiManager::ssidExists(ssid, scannedSsids)) { // Only add unique SSIDs
+
+                  if (!first) scannedSsids += ", ";
+                  scannedSsids += "{ \"SSID\": \"" + ssid + "\", \"RSSI\": " + String(WiFi.RSSI(i)) + " }";
+                  first = false;
+              }
+          }
+
+        scannedSsids += "] }"; // Close JSON array and object
+        return(scannedSsids);
+
+}
+
+bool WiFiManager::ssidExists(String ssid, String list) {
+    return list.indexOf("\"" + ssid + "\"") != -1; // Check if SSID already exists
+}
+
+
+
+
 
 void WiFiManager::attemptWiFiConnection() {
       
-    flashman::load_wifi_creds(wifiSsid , wifiPassword);
+    FlashManager::load_wifi_creds(wifiSsid , wifiPassword);
 
     Serial.println("Connecting to Wi-Fi...");
     
@@ -42,6 +82,7 @@ void WiFiManager::attemptWiFiConnection() {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
+
         BLEManager::updateDeviceStatus();
         Serial.println("\nWi-Fi Connected!");
         Serial.print("IP Address: ");
