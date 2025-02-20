@@ -29,15 +29,16 @@ void BLEManager::init() {
     WifiCredentialsChar.setWriteProperty(true);
     WifiCredentialsChar.setWritePermissions(GATT_PERM_WRITE);
     WifiCredentialsChar.setWriteCallback(ble_write_callback);
-    WifiCredentialsChar.setBufferLen(180);
+    WifiCredentialsChar.setBufferLen(180);     //180
 
     DeviceStatusChar.setReadProperty(true);
     DeviceStatusChar.setReadPermissions(GATT_PERM_READ);
-    DeviceStatusChar.setBufferLen(180);
+    DeviceStatusChar.setBufferLen(180);      //180
 
     AvailableSsidChar.setReadProperty(true);
     AvailableSsidChar.setReadPermissions(GATT_PERM_READ);
-    AvailableSsidChar.setBufferLen(180);
+    AvailableSsidChar.setReadCallback(ble_read_callback);
+    AvailableSsidChar.setBufferLen(230);
 
     WifiService.addCharacteristic(AvailableSsidChar);
     WifiService.addCharacteristic(DeviceStatusChar);
@@ -72,13 +73,15 @@ void BLEManager::updateDeviceStatus() {
     Serial.println(jsonString);
 }
 
-void  BLEManager::fetchSSIDS() {
-    String jsonAvailableSsid = WiFiManager::networkScanner();
-    AvailableSsidChar.writeString(jsonAvailableSsid.c_str());
-    Serial.print("Available Networks: ");
-    Serial.println(jsonAvailableSsid);
+// void  BLEManager::fetchSSIDS() {
+//     String jsonAvailableSsid = WiFiManager::networkScanner();
+//     AvailableSsidChar.writeString(jsonAvailableSsid.c_str());
 
-}
+    
+//     Serial.print("Available Networks: ");
+//     Serial.println(jsonAvailableSsid);
+
+// }
 
 void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     Serial.println(connID);
@@ -89,3 +92,48 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
 
     }
 }
+
+int chunkSize = 210;
+uint32_t ssidReadPosition = 0;
+
+void BLEManager::ble_read_callback(BLECharacteristic* chr, uint8_t connID) {
+ 
+
+    String jsonAvailableSsid =  WiFiManager::scannedSsidsString();
+    // Serial.println(jsonAvailableSsid);
+    if (ssidReadPosition >= jsonAvailableSsid.length()) {
+        ssidReadPosition = 0;  // Reset when done
+        return;
+    }
+
+    // Ensure we don’t read past the end of the string
+    uint32_t endPosition = ssidReadPosition + chunkSize;
+    if (endPosition > jsonAvailableSsid.length()) {
+        endPosition = jsonAvailableSsid.length();
+    }
+
+    // Extract the chunk
+    String chunk = jsonAvailableSsid.substring(ssidReadPosition, endPosition);
+    Serial.print("Sending chunk: ");
+    Serial.println(chunk);
+    Serial.print("ssidReadPosition: ");
+    Serial.println(ssidReadPosition);
+    Serial.print("endPosition: ");
+    Serial.println(endPosition);
+    // Indicate if more chunks are coming
+    if (endPosition < jsonAvailableSsid.length()) {
+        chunk += ",{\"more\":true}";
+    } else {
+        chunk += ",{\"more\":false}";
+    }
+
+    AvailableSsidChar.writeString(chunk.c_str());
+
+    // pCharacteristic->setValue(chunk.c_str()); // Send chunk
+    ssidReadPosition = endPosition; // Move to next chunk
+    //  vTaskDelay(pdMS_TO_TICKS(10));
+}
+
+
+
+

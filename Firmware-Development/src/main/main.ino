@@ -17,17 +17,17 @@
 
 void WiFiTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));
-    // WiFiManager::networkScanner();
+    WiFiManager::networkScanner();
     while (1) {
        
         if ((WiFiManager::credrecievedFlag(false ,false ,true) == true) || WiFi.status() != WL_CONNECTED) {
-             BLEManager::fetchSSIDS(); 
+            //  BLEManager::fetchSSIDS(); 
             WiFiManager::attemptWiFiConnection() ;
 
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
-            HTTPManager::httpGetLocationData() ;
+            // HTTPManager::httpGetLocationData() ;
             MQTTManager::attemptConnection();
         }
 
@@ -36,7 +36,7 @@ void WiFiTask(void* pvParameters) {
         }
 
         
-        MQTTManager::publish_JSON();
+        // MQTTManager::publish_JSON();
         MQTTManager::loop();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
