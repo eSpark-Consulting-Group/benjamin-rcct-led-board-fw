@@ -8,6 +8,7 @@
 #include "MQTTManager.hpp"
 #include "JSONManager.hpp"
 
+
 // #define CHAR_VALUE_MAX_LEN 500
 
 
@@ -22,11 +23,13 @@ class BLEManager {
       static void init();
       static void start();
       static void updateDeviceStatus();
-      // static void  fetchSSIDS() ;
       static void ble_write_callback(BLECharacteristic* chr, uint8_t connID);
       static void ble_read_callback(BLECharacteristic* chr, uint8_t connID);
+      static void scan_callback(BLECharacteristic* chr, uint8_t connID);
       static  char* getmacStr();
- 
+      static bool scanCommandRecievedFlag( bool write , bool write_val ,bool read );
+      static bool notifySSIDFlag( bool write , bool write_val ,bool read );
+      static void sendSSIDJSONNotifications();
   };
 
 

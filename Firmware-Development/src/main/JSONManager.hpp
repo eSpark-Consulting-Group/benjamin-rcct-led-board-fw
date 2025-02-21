@@ -14,7 +14,10 @@
 
 class JSONManager{
       public:
-
+        static int total_chunks_ssid_JSON();
+        static String* chunks_ssid_JSON();
+        static void make_ssid_JSON(int n);
+        static void parse_JSON(String data);
         static String make_ble_JSON();
         static String make_mqtt_JSON();
         static void parse_ble_JSON(String ble_data);        

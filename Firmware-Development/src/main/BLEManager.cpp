@@ -1,8 +1,10 @@
 #include "BLEManager.hpp"
 
-
+bool scanCommandRecieved= false;
+bool  notifySSID= false;
 char macStr[18];
-
+uint8_t connectionID;
+int currentChunk = 0;  // To track which chunk to send
 
 
 
@@ -35,6 +37,10 @@ void BLEManager::init() {
     DeviceStatusChar.setReadPermissions(GATT_PERM_READ);
     DeviceStatusChar.setBufferLen(180);      //180
 
+   AvailableSsidChar.setNotifyProperty(true);  // Allow writing
+    AvailableSsidChar.setWriteProperty(true);  // Allow writing
+    AvailableSsidChar.setWritePermissions(GATT_PERM_WRITE);
+    AvailableSsidChar.setWriteCallback(scan_callback);
     AvailableSsidChar.setReadProperty(true);
     AvailableSsidChar.setReadPermissions(GATT_PERM_READ);
     AvailableSsidChar.setReadCallback(ble_read_callback);
@@ -73,15 +79,7 @@ void BLEManager::updateDeviceStatus() {
     Serial.println(jsonString);
 }
 
-// void  BLEManager::fetchSSIDS() {
-//     String jsonAvailableSsid = WiFiManager::networkScanner();
-//     AvailableSsidChar.writeString(jsonAvailableSsid.c_str());
 
-    
-//     Serial.print("Available Networks: ");
-//     Serial.println(jsonAvailableSsid);
-
-// }
 
 void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     Serial.println(connID);
@@ -93,45 +91,85 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     }
 }
 
-int chunkSize = 210;
-uint32_t ssidReadPosition = 0;
+
 
 void BLEManager::ble_read_callback(BLECharacteristic* chr, uint8_t connID) {
  
-
-    String jsonAvailableSsid =  WiFiManager::scannedSsidsString();
-    // Serial.println(jsonAvailableSsid);
-    if (ssidReadPosition >= jsonAvailableSsid.length()) {
-        ssidReadPosition = 0;  // Reset when done
-        return;
+    if (currentChunk == -1){
+      String chunkInfo = "SSID INFO CHUNKS :"+ String(JSONManager::total_chunks_ssid_JSON());
+      AvailableSsidChar.writeString(chunkInfo.c_str());
+      currentChunk = 0;  // Start sending chunks from the next read
     }
 
-    // Ensure we don’t read past the end of the string
-    uint32_t endPosition = ssidReadPosition + chunkSize;
-    if (endPosition > jsonAvailableSsid.length()) {
-        endPosition = jsonAvailableSsid.length();
-    }
+    else if (currentChunk < JSONManager::total_chunks_ssid_JSON()) {
 
-    // Extract the chunk
-    String chunk = jsonAvailableSsid.substring(ssidReadPosition, endPosition);
-    Serial.print("Sending chunk: ");
-    Serial.println(chunk);
-    Serial.print("ssidReadPosition: ");
-    Serial.println(ssidReadPosition);
-    Serial.print("endPosition: ");
-    Serial.println(endPosition);
-    // Indicate if more chunks are coming
-    if (endPosition < jsonAvailableSsid.length()) {
-        chunk += ",{\"more\":true}";
+      String dataToSend = (JSONManager::chunks_ssid_JSON())[currentChunk];  //return the pointer for chunk array defined in JSONmanager and access its memeber and saves in datastring
+      Serial.print("total chunks: ");
+      Serial.println(JSONManager::total_chunks_ssid_JSON());
+
+      Serial.print("dataToSend: ");
+      Serial.println(dataToSend);
+      AvailableSsidChar.writeString(dataToSend.c_str());
+
+      currentChunk++;  // Move to the next chunk
     } else {
-        chunk += ",{\"more\":false}";
+      AvailableSsidChar.writeString("SSID INFO CHUNKS ENDED");
+      currentChunk = -1;  // Reset for the next full transmission
     }
 
-    AvailableSsidChar.writeString(chunk.c_str());
+}
 
-    // pCharacteristic->setValue(chunk.c_str()); // Send chunk
-    ssidReadPosition = endPosition; // Move to next chunk
-    //  vTaskDelay(pdMS_TO_TICKS(10));
+bool BLEManager::notifySSIDFlag( bool write , bool write_val ,bool read ){
+    if(write == true){
+        notifySSID= write_val;
+    }
+    else if(read == true){
+      return(notifySSID);
+    }
+    return(notifySSID) ;
+
+}
+
+bool BLEManager::scanCommandRecievedFlag( bool write , bool write_val ,bool read ){
+    if(write == true){
+        scanCommandRecieved= write_val;
+    }
+    else if(read == true){
+      return(scanCommandRecieved);
+    }
+    return(scanCommandRecieved) ;
+
+}
+
+void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){
+      scanCommandRecieved= true;
+      connectionID=connID;
+}
+
+void BLEManager::sendSSIDJSONNotifications(){
+
+    while(currentChunk < JSONManager::total_chunks_ssid_JSON()) {
+
+          String dataToSend = (JSONManager::chunks_ssid_JSON())[currentChunk];  //return the pointer for chunk array defined in JSONmanager and access its memeber and saves in datastring
+          Serial.print("total chunks: ");
+          Serial.println(JSONManager::total_chunks_ssid_JSON());
+
+          Serial.print("dataToSend: ");
+          Serial.println(dataToSend);
+          // AvailableSsidChar.writeString(dataToSend.c_str());
+          AvailableSsidChar.setData(6);
+
+          AvailableSsidChar.notify(connectionID);
+
+          currentChunk++;  // Move to the next chunk
+          vTaskDelay(pdMS_TO_TICKS(400));  // Check every 5 seconds           
+      }    
+      // AvailableSsidChar.notify("SSID INFO CHUNKS ENDED");
+      currentChunk = 0;  // Reset for the next full transmission
+    
+      notifySSID= false;
+
+
 }
 
 

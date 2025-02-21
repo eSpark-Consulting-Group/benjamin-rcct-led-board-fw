@@ -17,9 +17,9 @@
 
 void WiFiTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));
-    WiFiManager::networkScanner();
+
     while (1) {
-       
+
         if ((WiFiManager::credrecievedFlag(false ,false ,true) == true) || WiFi.status() != WL_CONNECTED) {
             //  BLEManager::fetchSSIDS(); 
             WiFiManager::attemptWiFiConnection() ;
@@ -47,6 +47,12 @@ void WiFiTask(void* pvParameters) {
 void animation_task(void *pvParameters) {
     while(1){ 
       // sunrise_anim::run_sunrise();
+      if((BLEManager::scanCommandRecievedFlag(false ,false ,true)) == true){
+            WiFiManager::networkScanner();
+        }
+      if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
+            BLEManager::sendSSIDJSONNotifications();
+      }
       vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds           
     }
 

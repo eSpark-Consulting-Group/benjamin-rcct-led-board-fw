@@ -7,9 +7,9 @@ bool credentialsReceived=false;
 
 
 
-String WiFiManager::scannedSsidsString(){
-          return(scannedSsids);
-    }
+// String WiFiManager::scannedSsidsString(){
+//           return(scannedSsids);
+//     }
 
 bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
     if(write == true){
@@ -23,6 +23,7 @@ bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
 }
 
 void WiFiManager::networkScanner(){
+    BLEManager::scanCommandRecievedFlag(true ,false ,false);
     Serial.println("Scanning available networks...");
     Serial.println("** Scan Networks **");
     int numSsid = WiFi.scanNetworks();
@@ -30,29 +31,11 @@ void WiFiManager::networkScanner(){
         Serial.println("Couldn't get a wifi connection");
         while (true);
     }
-
+    JSONManager::make_ssid_JSON(numSsid);
     // print the list of networks seen:
     Serial.print("number of available networks:");
     Serial.println(numSsid);
-
-    scannedSsids= "{ \"networks\": [";
-    // print the network number and name for each network found:
-
-        bool first = true;
-
-          for (int i = 0; i < numSsid; i++) {
-              String ssid = WiFi.SSID(i);
-              if (! WiFiManager::ssidExists(ssid, scannedSsids)) { // Only add unique SSIDs
-
-                  if (!first) scannedSsids += ", ";
-                  // scannedSsids += "{ \"SSID\": \"" + ssid + "\", \"RSSI\": " + String(WiFi.RSSI(i)) + "\",
-                  //                     \"Encryption Type\": " + String(WiFiManager::printEncryptionTypeEx(WiFi.encryptionTypeEx(i))) + " }";
-                  scannedSsids += "{ \"SSID\": \"" + ssid + "\", \"RSSI\": " + String(WiFi.RSSI(i)) + " }";
-                  first = false;
-              }
-          }
-
-        scannedSsids += "] }"; // Close JSON array and object
+    BLEManager::notifySSIDFlag(true , true ,false );
 
 }
 
@@ -104,38 +87,38 @@ void WiFiManager::attemptWiFiConnection() {
 }
 
 String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
-    /*  Arduino wifi api use encryption type to mapping to security type.
-    *  This function demonstrate how to get more richful information of security type.
-    */
+
     switch (thisType) {
         case SECURITY_OPEN:
-            return("Open");
+            return "Open";
             break;
         case SECURITY_WEP_PSK:
-            return("WEP");
+            return "WEP";
             break;
         case SECURITY_WPA_TKIP_PSK:
-            return("WPA TKIP");
+            return "WPA TKIP";
             break;
         case SECURITY_WPA_AES_PSK:
-            return("WPA AES");
+            return "WPA AES";
             break;
         case SECURITY_WPA2_AES_PSK:
-            return("WPA2 AES");
+            return "WPA2 AES";
             break;
         case SECURITY_WPA2_TKIP_PSK:
-            return("WPA2 TKIP");
+            return "WPA2 TKIP";
             break;
         case SECURITY_WPA2_MIXED_PSK:
-            return("WPA2 Mixed");
+            return "WPA2 Mixed";
             break;
         case SECURITY_WPA_WPA2_MIXED:
-            return("WPA/WPA2 AES");
+            return "WPA/WPA2 AES";
             break;
         case SECURITY_WPA3_AES_PSK:
-            return("WPA3 AES");
+            return"WPA3 AES";
             break;
         case SECURITY_WPA2_WPA3_MIXED:
-            return("WPA2/WPA3");
+            return "WPA2/WPA3";
+        default:
+            return "Unknown";  // Handle unexpected encryption types
     }
 }

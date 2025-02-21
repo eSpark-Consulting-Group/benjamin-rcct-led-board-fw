@@ -1,5 +1,56 @@
 #include "JSONManager.hpp"
 
+String chunks[50];
+int totalChunksSsidJson = 0;
+
+
+void JSONManager::parse_JSON(String data){
+            JSONVar data_JSON = JSON.parse(data);
+            if (JSON.typeof(data_JSON) == "undefined") {
+                Serial.println("Failed to parse JSON!");
+                return;
+            }
+            Serial.println("Parsed JSON:");
+            Serial.println(JSON.stringify(data_JSON));
+
+
+}
+
+
+
+String* JSONManager::chunks_ssid_JSON(){
+  return(chunks);
+
+}
+
+int JSONManager::total_chunks_ssid_JSON(){
+      return(totalChunksSsidJson);
+}
+
+
+void JSONManager::make_ssid_JSON(int n){
+        JSONVar wifiList;
+
+        for (int i = 0; i < n; i++) {
+          JSONVar network;
+          network["SSID"] = WiFi.SSID(i);
+          network["RSSI"] = WiFi.RSSI(i);
+          network["ENCRYPTION"] = WiFiManager::printEncryptionTypeEx(WiFi.encryptionTypeEx(i));
+          wifiList[i] = network;
+        }
+        String jsonString = JSON.stringify(wifiList);
+        Serial.print("created JSON:");
+        Serial.println(jsonString);
+
+        for (size_t i = 0; i < jsonString.length() && totalChunksSsidJson < 50; i += 200) {
+            chunks[totalChunksSsidJson] = jsonString.substring(i, i + 200);
+            Serial.print("CHUNK DATA:");
+            Serial.println(chunks[totalChunksSsidJson]);
+            totalChunksSsidJson++;
+          }
+        
+}
+
 
 
 
@@ -31,6 +82,7 @@ String JSONManager::make_mqtt_JSON(){
       mqtt_JSON["effect"] = EFFECT;
       mqtt_JSON["speed"] = SPEED;
 
+    
       return (JSON.stringify(mqtt_JSON));
 
 }
@@ -99,7 +151,7 @@ void JSONManager::parse_mqtt_JSON(String mqtt_data){
 }
 
 
-// void JSONManager::parse_http_JSON(String mqtt_data)
+
 
 
 
