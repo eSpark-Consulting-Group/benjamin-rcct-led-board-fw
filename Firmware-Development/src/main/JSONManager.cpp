@@ -4,15 +4,20 @@ String chunks[50];
 int totalChunksSsidJson = 0;
 
 
-void JSONManager::parse_JSON(String data){
-            JSONVar data_JSON = JSON.parse(data);
+String JSONManager::parse_JSON(String inputJSON , String property){
+            String propertyValue;
+            JSONVar data_JSON = JSON.parse(inputJSON);
             if (JSON.typeof(data_JSON) == "undefined") {
                 Serial.println("Failed to parse JSON!");
-                return;
+                return("Failed to parse JSON!");
             }
             Serial.println("Parsed JSON:");
             Serial.println(JSON.stringify(data_JSON));
-
+            
+              if (data_JSON.hasOwnProperty(property)){
+                   propertyValue = (const char*)data_JSON[property];
+                   return(propertyValue);
+              }
 
 }
 
@@ -28,15 +33,31 @@ int JSONManager::total_chunks_ssid_JSON(){
 }
 
 
+String JSONManager::make_JSON(String param , String state){
+         JSONVar jsonParam;
+         jsonParam[param] = state;
+          String jsonString = JSON.stringify(jsonParam) ;
+        return(jsonString);
+}
+  
+
 void JSONManager::make_ssid_JSON(int n){
         JSONVar wifiList;
+       std::set<String> seenSSIDs;  // To track unique SSIDs
 
         for (int i = 0; i < n; i++) {
           JSONVar network;
+          String ssid = WiFi.SSID(i);
+          
+          if (seenSSIDs.find(ssid) != seenSSIDs.end()) {
+            continue;  // Skip duplicates
+          }
+          seenSSIDs.insert(ssid);
+
           network["SSID"] = WiFi.SSID(i);
           network["RSSI"] = WiFi.RSSI(i);
           network["ENCRYPTION"] = WiFiManager::printEncryptionTypeEx(WiFi.encryptionTypeEx(i));
-          wifiList[i] = network;
+           wifiList[seenSSIDs.size() - 1] = network;
         }
         String jsonString = JSON.stringify(wifiList);
         Serial.print("created JSON:");
@@ -56,17 +77,10 @@ void JSONManager::make_ssid_JSON(int n){
 
 String JSONManager::make_ble_JSON(){
 
-    // return create(
-    //     std::make_pair("RCCT MAC ADDRESS", BLEManager::getmacStr()),
-    //     std::make_pair("RCCT WiFi STATUS", WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected"),
-    //     std::make_pair("WiFi SSID", WiFi.SSID()),
-    //     std::make_pair("MQTT SERVER", MQTTManager::isConnected() ? "Connected" : "Disconnected")
-    // );
     JSONVar deviceStatus;
     deviceStatus["RCCT MAC ADDRESS "] = BLEManager::getmacStr();
     deviceStatus["RCCT WiFi STATUS"] = WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected";
     deviceStatus["WiFi SSID"] = WiFi.SSID();
-    // deviceStatus["BLE DEVICE"] = BLE.connected() ? "Connected" : "Disconnected";
     deviceStatus["MQTT SERVER"] = MQTTManager::isConnected() ?  "Connected" : "Disconnected";
 
     String jsonString = JSON.stringify(deviceStatus);
@@ -141,9 +155,6 @@ void JSONManager::parse_mqtt_JSON(String mqtt_data){
                     
                     SingleInput::config_bright_color_temp();
 
-                    // FlashManager::save_single_input_vals(SingleInput::getInstance().config.color , 
-                    //                                     SingleInput::getInstance().config.temperature, 
-                    //                                       SingleInput::getInstance().config.brightness);
 
               }
 

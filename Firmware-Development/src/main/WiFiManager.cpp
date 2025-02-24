@@ -24,6 +24,7 @@ bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
 
 void WiFiManager::networkScanner(){
     BLEManager::scanCommandRecievedFlag(true ,false ,false);
+    
     Serial.println("Scanning available networks...");
     Serial.println("** Scan Networks **");
     int numSsid = WiFi.scanNetworks();

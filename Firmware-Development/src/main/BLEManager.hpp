@@ -1,7 +1,6 @@
 #pragma once
 
-// #undef CHAR_VALUE_MAX_LEN
-// #define CHAR_VALUE_MAX_LEN 500
+
 #include "BLEDevice.h"
 #include "BLECharacteristic.h"
 #include "WiFiManager.hpp"
@@ -9,7 +8,6 @@
 #include "JSONManager.hpp"
 
 
-// #define CHAR_VALUE_MAX_LEN 500
 
 
 #define WIFI_SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -24,7 +22,7 @@ class BLEManager {
       static void start();
       static void updateDeviceStatus();
       static void ble_write_callback(BLECharacteristic* chr, uint8_t connID);
-      static void ble_read_callback(BLECharacteristic* chr, uint8_t connID);
+      // static void ble_read_callback(BLECharacteristic* chr, uint8_t connID);
       static void scan_callback(BLECharacteristic* chr, uint8_t connID);
       static  char* getmacStr();
       static bool scanCommandRecievedFlag( bool write , bool write_val ,bool read );
