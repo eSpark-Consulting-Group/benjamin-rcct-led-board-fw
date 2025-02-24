@@ -182,7 +182,7 @@ void BLEManager::sendInvalidCommandNotifications(){
 
 
 void BLEManager::sendSSIDJSONNotifications(){
-          String endingMessage ;
+    String endingMessage ;
     while(currentChunk < JSONManager::total_chunks_ssid_JSON()) {
 
           String dataToSend = (JSONManager::chunks_ssid_JSON())[currentChunk];  //return the pointer for chunk array defined in JSONmanager and access its memeber and saves in datastring

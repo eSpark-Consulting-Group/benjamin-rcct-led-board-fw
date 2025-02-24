@@ -44,7 +44,18 @@
 #define MIN_COLOR     0.0f
 #define DEFAULT_COLOR    "#FF0000"
 
+//RTC
+#define DEFAULT_YEAR 2025
+#define DEFAULT_MONTH 2
+#define DEFAULT_DAY 24
 
+#define DEFAULT_HOUR 17
+#define DEFAULT_MIN 51
+#define DEFAULT_SEC 48
+
+#define ALARM_HOUR 17
+#define ALARM_MIN 52
+#define ALARM_SEC 0  // set alarm as 10 seconds
 
 
 

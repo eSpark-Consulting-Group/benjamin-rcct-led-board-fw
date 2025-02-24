@@ -6,11 +6,10 @@
 #include "MQTTManager.hpp"
 #include "SingleInput.hpp"
 #include "sunrise.hpp"
-// #include "config.hpp"
-
+#include "RTCManager.hpp"
 #include "HTTPManager.hpp"
 
-
+// #include "config.hpp"
 
 
 
@@ -35,7 +34,7 @@ void WiFiTask(void* pvParameters) {
         }
 
         
-        MQTTManager::publish_JSON();
+        // MQTTManager::publish_JSON();
         MQTTManager::loop();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -55,7 +54,9 @@ void animation_task(void *pvParameters) {
       if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
             BLEManager::sendInvalidCommandNotifications();
       }
-      vTaskDelay(pdMS_TO_TICKS(2000));  // Check every 5 seconds           
+      
+      RTCManager::updateRTCTime();
+      vTaskDelay(pdMS_TO_TICKS(100));  // Check every 5 seconds           
     }
 
 }
@@ -67,6 +68,8 @@ void setup() {
 
     
     BLEManager::init() ;
+    RTCManager::init();
+    RTCManager::enableAlarm();
     MQTTManager::init();
     SingleInput::PWM_init();
 

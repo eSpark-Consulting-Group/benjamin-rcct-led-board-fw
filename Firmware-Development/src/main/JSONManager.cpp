@@ -6,10 +6,11 @@ int totalChunksSsidJson = 0;
 
 String JSONManager::parse_JSON(String inputJSON , String property){
             String propertyValue;
+            JSON.stringify(inputJSON);
             JSONVar data_JSON = JSON.parse(inputJSON);
             if (JSON.typeof(data_JSON) == "undefined") {
                 Serial.println("Failed to parse JSON!");
-                return("Failed to parse JSON!");
+                // return("Failed to parse JSON!");
             }
             Serial.println("Parsed JSON:");
             Serial.println(JSON.stringify(data_JSON));
