@@ -18,7 +18,9 @@ String JSONManager::parse_JSON(String inputJSON , String property){
                    propertyValue = (const char*)data_JSON[property];
                    return(propertyValue);
               }
-
+              else{
+                return("invalid property");
+              }
 }
 
 

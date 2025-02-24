@@ -1,13 +1,13 @@
 #include "BLEManager.hpp"
 
-bool scanCommandRecieved= false;
+bool commandRecieved= false;
 bool  notifySSID= false;
+bool invalidCommand =false;
 char macStr[18];
 uint8_t connectionID;
 int currentChunk = 0;  // To track which chunk to send
 
 
-const char descriptor[] = "AVAILABLE SSID CHAR";
 
 // wifi config service
 BLEService WifiService(WIFI_SERVICE_UUID);
@@ -38,7 +38,7 @@ void BLEManager::init() {
     DeviceStatusChar.setBufferLen(180);      //180
 
     // AvailableSsidChar.setUserDescriptor(descriptor);
-   AvailableSsidChar.setNotifyProperty(true);  // Allow writing
+    AvailableSsidChar.setNotifyProperty(true);  // Allow writing
     AvailableSsidChar.setWriteProperty(true);  // Allow writing
     AvailableSsidChar.setWritePermissions(GATT_PERM_WRITE);
     AvailableSsidChar.setWriteCallback(scan_callback);
@@ -131,15 +131,25 @@ bool BLEManager::notifySSIDFlag( bool write , bool write_val ,bool read ){
 
 }
 
-bool BLEManager::scanCommandRecievedFlag( bool write , bool write_val ,bool read ){
+bool BLEManager::commandRecievedFlag( bool write , bool write_val ,bool read ){
     if(write == true){
-        scanCommandRecieved= write_val;
+        commandRecieved= write_val;
     }
     else if(read == true){
-      return(scanCommandRecieved);
+      return(commandRecieved);
     }
-    return(scanCommandRecieved) ;
+    return(commandRecieved) ;
 
+}
+
+bool BLEManager::invalidCommandFlag( bool write , bool write_val ,bool read ){
+    if(write == true){
+        invalidCommand= write_val;
+    }
+    else if(read == true){
+      return(invalidCommand);
+    }
+    return(invalidCommand) ;
 }
 
 void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){
@@ -147,16 +157,29 @@ void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){
 
       if (chr->getDataLen() > 0) {
 
-        String command = JSONManager::parse_JSON(chr->readString() , "SSID Scan"); 
+        String command = JSONManager::parse_JSON(chr->readString() , "cmd"); 
 
-        if( command == "start"){
-          scanCommandRecieved= true;}
+        if( command == "scan_start"){
+          commandRecieved= true;}
 
           else{
-            Serial.println("Invalid command"); 
-           }
+            invalidCommand = true;
+          }
+
       }
 }
+
+void BLEManager::sendInvalidCommandNotifications(){
+       String error;
+            error  = JSONManager::make_JSON("status", "invalid command");
+            const char* strData = error.c_str();
+            uint16_t length = error.length();
+            AvailableSsidChar.setData((uint8_t*)strData, length);   
+            AvailableSsidChar.notify(connectionID);
+            Serial.println("invalid command"); 
+           invalidCommand = false;
+}
+
 
 void BLEManager::sendSSIDJSONNotifications(){
           String endingMessage ;
@@ -178,7 +201,7 @@ void BLEManager::sendSSIDJSONNotifications(){
                 Serial.println("Notification sent successfully.");
             } else {
                 Serial.println("Failed to set data.");
-                endingMessage  = JSONManager::make_JSON("SSID Packets Transmission", "Failed");
+                endingMessage  = JSONManager::make_JSON("status", "scan_failed");
 
             }
 
@@ -186,11 +209,9 @@ void BLEManager::sendSSIDJSONNotifications(){
       } 
       
       if (currentChunk == JSONManager::total_chunks_ssid_JSON()){
-          endingMessage  = JSONManager::make_JSON("SSID Packets Transmission", "Successful");
+          endingMessage  = JSONManager::make_JSON("status", "scan_successful");
       }
-      else{
-         endingMessage  = JSONManager::make_JSON("SSID Packets Transmission", "Incomplete Packets Sent");
-      }
+
       const char* strData = endingMessage.c_str();
       uint16_t length = endingMessage.length();
       AvailableSsidChar.setData((uint8_t*)strData, length);   

@@ -25,8 +25,10 @@ class BLEManager {
       // static void ble_read_callback(BLECharacteristic* chr, uint8_t connID);
       static void scan_callback(BLECharacteristic* chr, uint8_t connID);
       static  char* getmacStr();
-      static bool scanCommandRecievedFlag( bool write , bool write_val ,bool read );
+      static bool commandRecievedFlag( bool write , bool write_val ,bool read );
       static bool notifySSIDFlag( bool write , bool write_val ,bool read );
+      static bool invalidCommandFlag( bool write , bool write_val ,bool read );
+      static void sendInvalidCommandNotifications();
       static void sendSSIDJSONNotifications();
   };
 
