@@ -8,6 +8,7 @@
 #include <set>
 
 #include "JSONManager.hpp"
+#include "RTCManager.hpp"
 
 
 
@@ -16,9 +17,12 @@ class HTTPManager{
     public:
         
 
-        static void httpGetLocationData();
+        static void httpGetAPIResponse() ;
+        static void extractDateAndTimeFromAPIResponse();
 
-
+    private:
+        static void extractTimeFromAPIResponse();
+        static void extractDateFromAPIResponse();
 
 
 };

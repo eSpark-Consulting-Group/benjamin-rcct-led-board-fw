@@ -1,4 +1,4 @@
-#include "sunrise.hpp"
+#include "AnimationManager.hpp"
 
 
 const float red_values[] = { 
@@ -22,7 +22,7 @@ const float cool_white_values[] = {
 };
 
 
-void sunrise_anim::run_sunrise() {
+void AnimationManager::runSunriseAnimation() {
   Serial.println("Starting sunrise sequence...");
   int steps = sizeof(warm_white_values) / sizeof(warm_white_values[0]);
   for (int i = 0; i < steps; i++) {
@@ -31,46 +31,45 @@ void sunrise_anim::run_sunrise() {
     //   return;
     // }
 
-    // float warm_value = ;
-    // float cool_value = ;
-    // float red_value = ;
-
     float duty_cycle1_red = red_values[i]/ MAX_DUTY_VAL;
     float duty_cycle2_cool = cool_white_values[i]/ MAX_DUTY_VAL;
     float duty_cycle3_warm = warm_white_values[i]/ MAX_DUTY_VAL;
 
 
     // Update the PWM values
-    set_led_values(duty_cycle3_warm, duty_cycle2_cool, duty_cycle1_red);
+    setSunriseAnimationValues(duty_cycle3_warm, duty_cycle2_cool, duty_cycle1_red);
     vTaskDelay(pdMS_TO_TICKS((SUNRISE_DURATION*1000 )/steps));
-    // delay((SUNRISE_DURATION * 1000) / steps);
-
-    // // Print current values to the terminal
-    // Serial.print("Step ");
-    // Serial.print(i + 1);
-    // Serial.println(":");
-    // Serial.print("Warm White: ");
-    // Serial.println(warm_value);
-    // Serial.print("Cool White: ");
-    // Serial.println(cool_value);
-    // Serial.print("Red: ");
-    // Serial.println(red_value);
-    // Serial.println();
   }
+  SingleInput::config_bright_color_temp();
   Serial.println("Sunrise sequence completed.");
 }
 
 
 
-void sunrise_anim::set_led_values(float warm_value, float cool_value, float red_value) {
+void AnimationManager::setSunriseAnimationValues(float warm_value, float cool_value, float red_value) {
 
   pwmout_write(&SingleInput::getInstance().pwm_warm_white, warm_value);
   pwmout_write(&SingleInput::getInstance().pwm_red, red_value);
   pwmout_write(&SingleInput::getInstance().pwm_cool_white, cool_value);
-  // Serial.print("Setting Warm White: ");
-  // Serial.print(warm_value);
-  // Serial.print(", Cool White: ");
-  // Serial.print(cool_value);
-  // Serial.print(", Red: ");
-  // Serial.println(red_value);
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -25,5 +25,5 @@ class JSONManager{
         static String parse_JSON(String inputJSON , String property);
         static void parse_ble_JSON(String ble_data);        
         static void parse_mqtt_JSON(String mqtt_data);
-      
+        static String jsonExtractFromString(String &response);
 };

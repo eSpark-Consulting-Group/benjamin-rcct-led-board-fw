@@ -17,6 +17,21 @@ typedef struct{
 
 }CurrentTimeInfo;
 
+typedef struct{
+
+  uint8_t desiredHour = DESIRED_WAKEUP_HOUR;
+  uint8_t desiredMin = DESIRED_WAKEUP_MIN;
+  uint8_t desiredSec = DESIRED_WAKEUP_SEC;
+
+}DesiredWakeUpTime;
+
+typedef struct{
+
+  uint8_t executionHour ;
+  uint8_t executionMin ;
+  uint8_t executionSec ;
+
+}ExecutionTime;
 
 
 
@@ -30,17 +45,22 @@ class RTCManager{
 
     alarm_t alarm;
     struct tm *timeinfo;
+
     CurrentTimeInfo crntimeinfo;
+    DesiredWakeUpTime destimeinfo;
+    ExecutionTime exectime;
 
     static void init();
     static void disableAlarm(void);
     static void enableAlarm();
-    static void updateRTCTime();
+    static void syncRTCDateAndTime();
+    static void printDateAndTime(void);
+    static bool executionTimeCheck();
+    static void setExecutionTime();
 
   private:
     RTCManager() {}  // Private constructor (singleton)
     static void rtcHandler(void) ;
-    static void printStringTime(void);
 
 };
 

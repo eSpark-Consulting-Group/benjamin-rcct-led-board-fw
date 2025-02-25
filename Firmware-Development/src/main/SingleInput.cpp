@@ -35,6 +35,7 @@ bool SingleInput::single_input_recieved_flag( bool write , bool write_val ,bool 
     else if(read == true){
       return(single_input_recieved);
     }
+    return;
 }
 
 void SingleInput::hexToRGB(const String& hex, int& red, int& green, int& blue) {

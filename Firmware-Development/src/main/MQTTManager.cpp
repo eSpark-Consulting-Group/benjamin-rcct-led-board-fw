@@ -129,7 +129,7 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
         if (receivedChunks == totalChunks) {
             Serial.println("All chunks received. Parsing JSON...");
  
-            JSONManager::parse_mqtt_JSON(fileBuffer);
+            // JSONManager::parse_mqtt_JSON(fileBuffer);
             // TODO: Handle the parsed JSON data
         } else {
             Serial.println("Error: Incomplete file transfer!");

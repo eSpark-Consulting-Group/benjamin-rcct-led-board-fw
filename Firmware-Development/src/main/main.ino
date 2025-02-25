@@ -5,16 +5,17 @@
 #include "WiFiManager.hpp"
 #include "MQTTManager.hpp"
 #include "SingleInput.hpp"
-#include "sunrise.hpp"
+#include "AnimationManager.hpp"
 #include "RTCManager.hpp"
 #include "HTTPManager.hpp"
 
 // #include "config.hpp"
 
+TaskHandle_t taskAnimationExecuteHandle = NULL;
 
 
 
-void WiFiTask(void* pvParameters) {
+void taskMajor(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     while (1) {
@@ -25,7 +26,10 @@ void WiFiTask(void* pvParameters) {
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
-            HTTPManager::httpGetLocationData() ;
+            HTTPManager::httpGetAPIResponse() ;
+            HTTPManager::extractDateAndTimeFromAPIResponse();
+            RTCManager::syncRTCDateAndTime();
+            RTCManager::setExecutionTime();
             MQTTManager::attemptConnection();
         }
 
@@ -36,15 +40,15 @@ void WiFiTask(void* pvParameters) {
         
         // MQTTManager::publish_JSON();
         MQTTManager::loop();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
 
 
-void animation_task(void *pvParameters) {
+void taskMinor(void *pvParameters) {
     while(1){ 
-      // sunrise_anim::run_sunrise();
+      // AnimationManager::runSunriseAnimation();
       if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
             WiFiManager::networkScanner();
         }
@@ -54,11 +58,20 @@ void animation_task(void *pvParameters) {
       if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
             BLEManager::sendInvalidCommandNotifications();
       }
-      
-      RTCManager::updateRTCTime();
+      if(RTCManager::executionTimeCheck() == true){
+         xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 4096, NULL, 1, &taskAnimationExecuteHandle);        
+      }
+      RTCManager::printDateAndTime();
       vTaskDelay(pdMS_TO_TICKS(100));  // Check every 5 seconds           
     }
 
+}
+
+void taskAnimationExecute(void *pvParameters) {
+    Serial.println("Executing Animation");
+    AnimationManager::runSunriseAnimation();
+    Serial.println("Animation Complete");
+    vTaskDelete(NULL);  // Delete itself after finishing
 }
 
 void setup() {
@@ -69,12 +82,11 @@ void setup() {
     
     BLEManager::init() ;
     RTCManager::init();
-    RTCManager::enableAlarm();
     MQTTManager::init();
     SingleInput::PWM_init();
 
-    xTaskCreate(WiFiTask, "WiFiTask", 4096, NULL, 2, NULL);
-    xTaskCreate(animation_task, "animation_task", 4096, NULL, 1, NULL);
+    xTaskCreate(taskMajor, "taskMajor", 4096, NULL, 2, NULL);
+    xTaskCreate(taskMinor, "taskMinor", 4096, NULL, 1, NULL);
 
 }
 

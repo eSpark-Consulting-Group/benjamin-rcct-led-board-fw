@@ -4,14 +4,14 @@
 
 const char server1[] = "api.ipgeolocation.io";
 const char server1_path[] = "/timezone?apiKey=1f70bad104504ec483f32a86e13aec18";
-
+String responsejsonString ;
 
 
 
 WiFiClient client_new;
 
 
-void HTTPManager::httpGetLocationData() {
+void HTTPManager::httpGetAPIResponse() {
   HttpClient http1(client_new);
 
    int err = http1.get(server1, server1_path);
@@ -27,7 +27,6 @@ void HTTPManager::httpGetLocationData() {
               Serial.println("Request failed with status code: " + String(err));           
             }
         }
-
         if (err == 200){
             String response;
             while (http1.available()) {
@@ -36,13 +35,67 @@ void HTTPManager::httpGetLocationData() {
 
 
               }
-            String time = JSONManager::parse_JSON(response , "time_24");
-            Serial.println("Response while loop:" +response);
-
+            //Extract JSON from Response
+            responsejsonString = JSONManager::jsonExtractFromString(response);
+            Serial.println("Response while loop:"+ responsejsonString);
         }
+}
+
+void HTTPManager::extractTimeFromAPIResponse() {
+
+      String time = JSONManager::parse_JSON(responsejsonString , "time_24");
+      Serial.println("time:"+ time);
+
+      String hoursStr = time.substring(0, 2);
+      String minutesStr = time.substring(3, 5);
+      String secondsStr = time.substring(6, 8);
+      
+      RTCManager::getInstance().crntimeinfo.hour = (uint8_t)atoi(hoursStr.c_str());
+      RTCManager::getInstance().crntimeinfo.min = (uint8_t)atoi(minutesStr.c_str());
+      RTCManager::getInstance().crntimeinfo.sec = (uint8_t)atoi(secondsStr.c_str());
+
+      Serial.print("Hours: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.hour);
+      Serial.print("Minutes: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.min);
+      Serial.print("Seconds: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.sec);
 
 }
 
+void HTTPManager::extractDateFromAPIResponse(){
+
+      String date = JSONManager::parse_JSON(responsejsonString , "date");
+      String yearStr = date.substring(0, 4);
+      String monthStr = date.substring(5, 7);
+      String dayStr = date.substring(8, 10);
+
+
+      Serial.println(yearStr);
+      Serial.println(monthStr);
+      Serial.println(dayStr);
+
+      RTCManager::getInstance().crntimeinfo.year = (uint16_t)atoi(yearStr.c_str());
+      RTCManager::getInstance().crntimeinfo.month = (uint8_t)atoi(monthStr.c_str());
+      RTCManager::getInstance().crntimeinfo.day = (uint8_t)atoi(dayStr.c_str());
+
+
+      Serial.print("Year: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.year);
+      Serial.print("Month: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.month);
+      Serial.print("Day: ");
+      Serial.println(RTCManager::getInstance().crntimeinfo.day);
+
+}
+
+
+void HTTPManager::extractDateAndTimeFromAPIResponse() {
+
+      extractTimeFromAPIResponse();
+      extractDateFromAPIResponse();
+
+}
 
 
 

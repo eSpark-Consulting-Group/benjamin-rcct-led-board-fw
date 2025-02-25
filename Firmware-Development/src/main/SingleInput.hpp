@@ -37,8 +37,7 @@ class SingleInput {
     static void config_bright_color_temp();
     static bool  single_input_recieved_flag( bool write , bool write_val ,bool read);
 
-    // static void run_sunrise();
-    // static void set_led_values(float warm_value, float cool_value, float red_value);
+
 
 
   private:
@@ -47,11 +46,8 @@ class SingleInput {
     static void config_brightness();
     static void config_temperature();
     static void config_color();
-    // static pwmout_t pwm_red;
-    // static pwmout_t pwm_cool_white;
-    // static pwmout_t pwm_warm_white;
-   
 
+  
 };
 
 

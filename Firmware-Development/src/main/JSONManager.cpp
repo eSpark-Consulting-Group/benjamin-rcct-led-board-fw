@@ -10,14 +10,15 @@ String JSONManager::parse_JSON(String inputJSON , String property){
             JSONVar data_JSON = JSON.parse(inputJSON);
             if (JSON.typeof(data_JSON) == "undefined") {
                 Serial.println("Failed to parse JSON!");
-                // return("Failed to parse JSON!");
+                return("Failed to parse JSON!");
             }
             Serial.println("Parsed JSON:");
             Serial.println(JSON.stringify(data_JSON));
             
-              if (data_JSON.hasOwnProperty(property)){
+              if (data_JSON.hasOwnProperty(property)){                  
                    propertyValue = (const char*)data_JSON[property];
                    return(propertyValue);
+                  
               }
               else{
                 return("invalid property");
@@ -164,8 +165,38 @@ void JSONManager::parse_mqtt_JSON(String mqtt_data){
 
 }
 
+//Extract JSON from Response
+String JSONManager::jsonExtractFromString(String &response){
+              int braceCount = 0;
+              int jsonStart = -1;
+              String jsonString="";
 
+              for (int i = 0; i < response.length(); i++) {
+                char c = response.charAt(i);
 
+                // Detect the start of JSON
+                if (c == '{') {
+                  if (jsonStart == -1) {
+                    jsonStart = i;  // Mark the start of JSON
+                  }
+                  braceCount++;
+                }
+
+                // Add characters if inside JSON
+                if (jsonStart != -1) {
+                  jsonString += c;
+                }
+
+                // Detect the end of JSON when braces are balanced
+                if (c == '}') {
+                  braceCount--;
+                  if (braceCount == 0) {
+                    break;  // Complete JSON extracted
+                       }
+                  }
+               }
+                return(jsonString);
+}
 
 
 
