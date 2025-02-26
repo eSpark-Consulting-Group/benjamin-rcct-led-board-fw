@@ -3,7 +3,7 @@
 bool commandRecieved= false;
 bool  notifySSID= false;
 bool invalidCommand =false;
-char macStr[18];
+char macStr[MAC_STRING_SIZE];
 uint8_t connectionID;
 int currentChunk = 0;  // To track which chunk to send
 
@@ -31,21 +31,18 @@ void BLEManager::init() {
     WifiCredentialsChar.setWriteProperty(true);
     WifiCredentialsChar.setWritePermissions(GATT_PERM_WRITE);
     WifiCredentialsChar.setWriteCallback(ble_write_callback);
-    WifiCredentialsChar.setBufferLen(180);     //180
+    WifiCredentialsChar.setBufferLen(WIFICREDSCHAR_BUFFER_LEN);     //180
 
     DeviceStatusChar.setReadProperty(true);
     DeviceStatusChar.setReadPermissions(GATT_PERM_READ);
-    DeviceStatusChar.setBufferLen(180);      //180
+    DeviceStatusChar.setBufferLen(DEVICESTATUSCHAR_BUFFER_LEN);      //180
 
-    // AvailableSsidChar.setUserDescriptor(descriptor);
+
     AvailableSsidChar.setNotifyProperty(true);  // Allow writing
     AvailableSsidChar.setWriteProperty(true);  // Allow writing
     AvailableSsidChar.setWritePermissions(GATT_PERM_WRITE);
     AvailableSsidChar.setWriteCallback(scan_callback);
-    // AvailableSsidChar.setReadProperty(true);
-    // AvailableSsidChar.setReadPermissions(GATT_PERM_READ);
-    // AvailableSsidChar.setReadCallback(ble_read_callback);
-    AvailableSsidChar.setBufferLen(230);
+    AvailableSsidChar.setBufferLen(AVAILABLESSIDCHAR_BUFFER_LEN);
 
     WifiService.addCharacteristic(AvailableSsidChar);
     WifiService.addCharacteristic(DeviceStatusChar);
@@ -94,32 +91,6 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
 
 
 
-// void BLEManager::ble_read_callback(BLECharacteristic* chr, uint8_t connID) {
- 
-//     if (currentChunk == -1){
-//       String chunkInfo = "SSID INFO CHUNKS :"+ String(JSONManager::total_chunks_ssid_JSON());
-//       AvailableSsidChar.writeString(chunkInfo.c_str());
-//       currentChunk = 0;  // Start sending chunks from the next read
-//     }
-
-//     else if (currentChunk < JSONManager::total_chunks_ssid_JSON()) {
-
-//       String dataToSend = (JSONManager::chunks_ssid_JSON())[currentChunk];  //return the pointer for chunk array defined in JSONmanager and access its memeber and saves in datastring
-//       Serial.print("total chunks: ");
-//       Serial.println(JSONManager::total_chunks_ssid_JSON());
-
-//       Serial.print("dataToSend: ");
-//       Serial.println(dataToSend);
-//       AvailableSsidChar.writeString(dataToSend.c_str());
-
-//       currentChunk++;  // Move to the next chunk
-//     } else {
-//       AvailableSsidChar.writeString("SSID INFO CHUNKS ENDED");
-//       currentChunk = -1;  // Reset for the next full transmission
-//     }
-
-// }
-
 bool BLEManager::notifySSIDFlag( bool write , bool write_val ,bool read ){
     if(write == true){
         notifySSID= write_val;
@@ -159,7 +130,7 @@ void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){
 
         String command = JSONManager::parse_JSON(chr->readString() , "cmd"); 
 
-        if( command == "scan_start"){
+        if( command == CMD_SCAN_START){
           commandRecieved= true;}
 
           else{
@@ -171,12 +142,12 @@ void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){
 
 void BLEManager::sendInvalidCommandNotifications(){
        String error;
-            error  = JSONManager::make_JSON("status", "invalid command");
+            error  = JSONManager::make_JSON("status",STATUS_INVALID_COMMAND);
             const char* strData = error.c_str();
             uint16_t length = error.length();
             AvailableSsidChar.setData((uint8_t*)strData, length);   
             AvailableSsidChar.notify(connectionID);
-            Serial.println("invalid command"); 
+            Serial.println(STATUS_INVALID_COMMAND); 
            invalidCommand = false;
 }
 
@@ -201,7 +172,7 @@ void BLEManager::sendSSIDJSONNotifications(){
                 Serial.println("Notification sent successfully.");
             } else {
                 Serial.println("Failed to set data.");
-                endingMessage  = JSONManager::make_JSON("status", "scan_failed");
+                endingMessage  = JSONManager::make_JSON("status", STATUS_FAILED_SCAN);
 
             }
 
@@ -209,7 +180,7 @@ void BLEManager::sendSSIDJSONNotifications(){
       } 
       
       if (currentChunk == JSONManager::total_chunks_ssid_JSON()){
-          endingMessage  = JSONManager::make_JSON("status", "scan_successful");
+          endingMessage  = JSONManager::make_JSON("status", STATUS_SUCCESSFUL_SCAN);
       }
 
       const char* strData = endingMessage.c_str();

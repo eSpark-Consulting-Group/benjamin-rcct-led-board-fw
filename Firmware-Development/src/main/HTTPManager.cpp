@@ -2,9 +2,9 @@
 
 
 
-const char server1[] = "api.ipgeolocation.io";
-const char server1_path[] = "/timezone?apiKey=1f70bad104504ec483f32a86e13aec18";
-String responsejsonString ;
+const char server1[] = SERVER1_DOMAIN_NAME;
+const char server1_path[] = SERVER1_CONFIG_PATH;
+String responsejsonString ="";
 
 
 
@@ -27,7 +27,7 @@ void HTTPManager::httpGetAPIResponse() {
               Serial.println("Request failed with status code: " + String(err));           
             }
         }
-        if (err == 200){
+        if (err == SERVER1_SUCCESS_CODE){
             String response;
             while (http1.available()) {
                   char c = http1.read();
@@ -41,12 +41,12 @@ void HTTPManager::httpGetAPIResponse() {
         }
 }
 
-void HTTPManager::extractTimeFromAPIResponse() {
 
-      String time = JSONManager::parse_JSON(responsejsonString , "time_24");
+void HTTPManager::extractTimeFromAPIResponse() {
+      String time = JSONManager::parse_JSON(responsejsonString , SERVER1_TIME_PROPERTY);  
       Serial.println("time:"+ time);
 
-      String hoursStr = time.substring(0, 2);
+      String hoursStr = time.substring(0, 2);    //for HH:MM:SS   format
       String minutesStr = time.substring(3, 5);
       String secondsStr = time.substring(6, 8);
       
@@ -65,8 +65,8 @@ void HTTPManager::extractTimeFromAPIResponse() {
 
 void HTTPManager::extractDateFromAPIResponse(){
 
-      String date = JSONManager::parse_JSON(responsejsonString , "date");
-      String yearStr = date.substring(0, 4);
+      String date = JSONManager::parse_JSON(responsejsonString , SERVER1_DATE_PROPERTY);
+      String yearStr = date.substring(0, 4);          //for YYYY-MM-DD  foramt
       String monthStr = date.substring(5, 7);
       String dayStr = date.substring(8, 10);
 
@@ -91,7 +91,6 @@ void HTTPManager::extractDateFromAPIResponse(){
 
 
 void HTTPManager::extractDateAndTimeFromAPIResponse() {
-
       extractTimeFromAPIResponse();
       extractDateFromAPIResponse();
 

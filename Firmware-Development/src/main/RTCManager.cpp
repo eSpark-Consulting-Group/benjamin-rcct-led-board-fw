@@ -4,7 +4,6 @@
 RTC rtc;
 
 
-
 void RTCManager::init(){
     rtc.Init();
     int initTime = rtc.SetEpoch( RTCManager::getInstance().crntimeinfo.year, 
@@ -72,13 +71,12 @@ void RTCManager::printDateAndTime(void) {
       } else {
         Serial.println("Failed to convert time.");
     }    
-    rtc.Wait(1);
+    // rtc.Wait(1);
 }
 
 bool RTCManager::executionTimeCheck(){
     int32_t seconds;
     seconds = rtc.Read();
-    Serial.println(seconds);
     RTCManager::getInstance().timeinfo = localtime(&seconds);
     if((RTCManager::getInstance().timeinfo->tm_hour)  == (RTCManager::getInstance().exectime.executionHour) &&
             (RTCManager::getInstance().timeinfo->tm_min) == (RTCManager::getInstance().exectime.executionMin) && 
@@ -88,7 +86,7 @@ bool RTCManager::executionTimeCheck(){
               }
               
             else{
-              Serial.println("Timer Running");
+              // Serial.println("Timer Running");
                 return false;
             }
         

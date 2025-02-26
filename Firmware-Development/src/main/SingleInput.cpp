@@ -13,8 +13,6 @@ uint16_t color_res;
 // pwmout_t SingleInput::pwm_cool_white;
 // pwmout_t SingleInput::pwm_warm_white;
 
-// const float time_period = 1/FREQUENCY; // time period
-
 
 void SingleInput::PWM_init(){
     pwmout_init(&SingleInput::getInstance().pwm_red, (PinName)RED_PIN);
@@ -35,7 +33,7 @@ bool SingleInput::single_input_recieved_flag( bool write , bool write_val ,bool 
     else if(read == true){
       return(single_input_recieved);
     }
-    return;
+    // return ;
 }
 
 void SingleInput::hexToRGB(const String& hex, int& red, int& green, int& blue) {

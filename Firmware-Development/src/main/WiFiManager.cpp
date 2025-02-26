@@ -7,10 +7,6 @@ bool credentialsReceived=false;
 
 
 
-// String WiFiManager::scannedSsidsString(){
-//           return(scannedSsids);
-//     }
-
 bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
     if(write == true){
         credentialsReceived= write_val;
@@ -61,10 +57,9 @@ void WiFiManager::attemptWiFiConnection() {
     strcpy(pass_buf, wifiPassword.c_str());
 
     WiFi.begin(ssid_buf, pass_buf);
-    // wifiSsid = wifiPassword = "";
 
     unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 5000; // 15 seconds timeout
+    const unsigned long timeout = WIFI_TIMEOUT_MS; // 5 seconds timeout
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
 

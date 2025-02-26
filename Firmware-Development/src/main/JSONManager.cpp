@@ -1,6 +1,6 @@
 #include "JSONManager.hpp"
 
-String chunks[50];
+String ssidChunks[SSID_JSON_MAX_CHUNKS];
 int totalChunksSsidJson = 0;
 
 
@@ -28,7 +28,7 @@ String JSONManager::parse_JSON(String inputJSON , String property){
 
 
 String* JSONManager::chunks_ssid_JSON(){
-  return(chunks);
+  return(ssidChunks);
 
 }
 
@@ -67,10 +67,10 @@ void JSONManager::make_ssid_JSON(int n){
         Serial.print("created JSON:");
         Serial.println(jsonString);
 
-        for (size_t i = 0; i < jsonString.length() && totalChunksSsidJson < 50; i += 200) {
-            chunks[totalChunksSsidJson] = jsonString.substring(i, i + 200);
+        for (size_t i = 0; i < jsonString.length() && totalChunksSsidJson < SSID_JSON_MAX_CHUNKS; i += SSID_JSON_MAX_SIZE) {
+          ssidChunks[totalChunksSsidJson] = jsonString.substring(i, i + SSID_JSON_MAX_SIZE);
             Serial.print("CHUNK DATA:");
-            Serial.println(chunks[totalChunksSsidJson]);
+            Serial.println(ssidChunks[totalChunksSsidJson]);
             totalChunksSsidJson++;
           }
         
@@ -125,7 +125,7 @@ void JSONManager::parse_ble_JSON(String ble_data){
                   Serial.print("Parsed SSID: ");
                   Serial.println(parsed_ssid);
 
-                  if (parsed_ssid.length() >= 64 || parsed_password.length() >= 64) {
+                  if (parsed_ssid.length() >= SSID_BUFF_LEN || parsed_password.length() >= PASS_BUFF_LEN) {
                   Serial.println("Error: SSID or Password too long!");
                   return;}
 

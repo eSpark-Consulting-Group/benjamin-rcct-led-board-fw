@@ -5,7 +5,7 @@
 
 #include "BLEManager.hpp"
 #include "JSONManager.hpp"
-
+#include "config.hpp"
 
 class MQTTManager {
 public:

@@ -9,7 +9,7 @@
 
 #include "JSONManager.hpp"
 #include "RTCManager.hpp"
-
+#include "config.hpp"
 
 
 

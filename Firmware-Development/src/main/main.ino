@@ -12,7 +12,7 @@
 // #include "config.hpp"
 
 TaskHandle_t taskAnimationExecuteHandle = NULL;
-
+TaskHandle_t taskNetworkScannerHandle = NULL;
 
 
 void taskMajor(void* pvParameters) {
@@ -37,9 +37,21 @@ void taskMajor(void* pvParameters) {
             SingleInput::config_bright_color_temp();
         }
 
-        
-        // MQTTManager::publish_JSON();
-        MQTTManager::loop();
+        if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
+            xTaskCreate(taskNetworkScanner, "taskNetworkScanner", 4096, NULL, 1, &taskNetworkScannerHandle);        
+        }
+
+        if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
+                BLEManager::sendSSIDJSONNotifications();
+        }
+        if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
+                BLEManager::sendInvalidCommandNotifications();
+        }
+
+        if(RTCManager::executionTimeCheck() == true){
+            xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 4096, NULL, 1, &taskAnimationExecuteHandle);        
+        }
+        RTCManager::printDateAndTime();       
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
@@ -48,30 +60,24 @@ void taskMajor(void* pvParameters) {
 
 void taskMinor(void *pvParameters) {
     while(1){ 
-      // AnimationManager::runSunriseAnimation();
-      if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
-            WiFiManager::networkScanner();
-        }
-      if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
-            BLEManager::sendSSIDJSONNotifications();
-      }
-      if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
-            BLEManager::sendInvalidCommandNotifications();
-      }
-      if(RTCManager::executionTimeCheck() == true){
-         xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 4096, NULL, 1, &taskAnimationExecuteHandle);        
-      }
-      RTCManager::printDateAndTime();
-      vTaskDelay(pdMS_TO_TICKS(100));  // Check every 5 seconds           
+      MQTTManager::loop();
+      // MQTTManager::publish_JSON();
+      vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
     }
 
+}
+
+
+void taskNetworkScanner(void *pvParameters) {
+    WiFiManager::networkScanner();
+    vTaskDelete(NULL);  
 }
 
 void taskAnimationExecute(void *pvParameters) {
     Serial.println("Executing Animation");
     AnimationManager::runSunriseAnimation();
     Serial.println("Animation Complete");
-    vTaskDelete(NULL);  // Delete itself after finishing
+    vTaskDelete(NULL);  
 }
 
 void setup() {
@@ -86,7 +92,7 @@ void setup() {
     SingleInput::PWM_init();
 
     xTaskCreate(taskMajor, "taskMajor", 4096, NULL, 2, NULL);
-    xTaskCreate(taskMinor, "taskMinor", 4096, NULL, 1, NULL);
+    xTaskCreate(taskMinor, "taskMinor", 76000, NULL, 1, NULL);
 
 }
 

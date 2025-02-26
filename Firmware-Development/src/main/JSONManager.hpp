@@ -8,10 +8,9 @@
 #include "BLEManager.hpp"
 #include "MQTTManager.hpp"
 #include "WiFiManager.hpp"
-#include "config.hpp"
-// #include "JSONManager2.hpp"
 #include "SingleInput.hpp"
 #include "FlashManager.hpp"
+#include "config.hpp"
 
 
 class JSONManager{

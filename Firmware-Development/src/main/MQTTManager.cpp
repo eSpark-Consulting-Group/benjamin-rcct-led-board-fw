@@ -5,15 +5,15 @@ PubSubClient client(wifiClient);
 
 
 //SUBSCRIBE TOPICS
-char mqttServer[]     = "184.169.181.179";
-char clientId[]       = "amebaClient";
-char subtopic1[] = "controller/filetransfer/chunk/#";
-char subtopic2[] = "controller/filetransfer/chunkCount";
-char subtopic3[] = "controller/filetransfer/complete";
-char controltopic[50] = "led/control/";
+char mqttServer[]     = SERVER_IP;
+char clientId[]       = CLIENT_ID;
+char subtopic1[] = CHUNK_TOPIC_1_SUB;
+char subtopic2[] = CHUNK_TOPIC_2_SUB;
+char subtopic3[] = CHUNK_TOPIC_3_SUB ;
+char controltopic[50] = CONTROL_TOPIC_SUB;
 
 //PUBLISHING TOPICS
-char devicetopic[50] = "led/device/";
+char devicetopic[50] = DEVICE_TOPIC_PUB;
 // char devicetopic_payload[] = "hello world";
 
 
@@ -42,8 +42,9 @@ void conc(){
 }
 
 void MQTTManager::init() {
-    client.setServer(mqttServer, 1883);
+    client.setServer(mqttServer, SERVER_PORT);
     client.setCallback(callback);
+
 }
 
 void MQTTManager::loop(){
@@ -75,9 +76,9 @@ void MQTTManager::attemptConnection() {
                   BLEManager::updateDeviceStatus();
                   Serial.println("connected");
                   //Once connected, publish an announcement and resubscribe
-                  client.subscribe("controller/filetransfer/chunk/#");
-                  client.subscribe("controller/filetransfer/chunkCount");
-                  client.subscribe("controller/filetransfer/complete");
+                  client.subscribe(subtopic1);
+                  client.subscribe(subtopic2);
+                  client.subscribe(subtopic3);
                   client.subscribe(controltopic);
                   // client.publish(devicetopic, devicetopic_payload);
 
@@ -101,13 +102,20 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     Serial.print(topic);
     Serial.print("] ");
     
-    String message;
+    String message;       //430 bytes per chunk limit
+    // fileBuffer.reserve(76 * 1024);  // Request 76KB
+    // if (fileBuffer.length() == 0) {
+    //     Serial.println("Memory allocated successfully.");
+    // } else {
+    //     Serial.println("Memory allocation failed.");
+    // }
+    
     for (unsigned int i = 0; i < length; i++) {
         message += (char)payload[i];
     }
     Serial.println(message);
 
-    if (String(topic) == "controller/filetransfer/chunkCount") {
+    if (String(topic) == subtopic2 ) {
         totalChunks = message.toInt();
         receivedChunks = 0;
         fileBuffer = "";  // Reset buffer
@@ -116,7 +124,7 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
         Serial.println(" chunks.");
     } 
 
-    else if (String(topic).startsWith("controller/filetransfer/chunk/")) {
+     else if (String(topic).startsWith("controller/filetransfer/chunk/")){
         fileBuffer += message;  // Append chunk
         receivedChunks++;
 
@@ -125,8 +133,10 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
         Serial.print(" of ");
         Serial.println(totalChunks);
     } 
-    else if (String(topic) == "controller/filetransfer/complete") {
-        if (receivedChunks == totalChunks) {
+    else if (String(topic) == subtopic3 ) {
+        if (receivedChunks  == totalChunks ) {
+     
+
             Serial.println("All chunks received. Parsing JSON...");
  
             // JSONManager::parse_mqtt_JSON(fileBuffer);

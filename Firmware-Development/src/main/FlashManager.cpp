@@ -3,7 +3,7 @@
 
 
 void FlashManager::save_wifi_creds(String ssid , String pass){
-      memset(FlashMemory.buf, 0, 128);
+      memset(FlashMemory.buf, 0, MEMSET_BUFF_LEN_WIFICREDS);
       strcpy((char *)(FlashMemory.buf + FLASH_SSID_OFFSET), ssid.c_str());
       strcpy((char *)(FlashMemory.buf + FLASH_PASS_OFFSET), pass.c_str());
 
@@ -16,8 +16,8 @@ void FlashManager::save_wifi_creds(String ssid , String pass){
 void FlashManager::load_wifi_creds(String &ssid , String &pass){
       Serial.println("Loading Wi-Fi credentials from flash...");
 
-      char ssidBuf[64];
-      char passBuf[64];
+      char ssidBuf[SSID_BUFF_LEN];
+      char passBuf[PASS_BUFF_LEN];
 
       strcpy(ssidBuf, (char *)(FlashMemory.buf + FLASH_SSID_OFFSET));
       strcpy(passBuf, (char *)(FlashMemory.buf + FLASH_PASS_OFFSET));
