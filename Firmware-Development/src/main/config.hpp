@@ -102,6 +102,9 @@
 #define CHUNK_TOPIC_2_SUB "controller/filetransfer/chunkCount"
 #define CHUNK_TOPIC_3_SUB "controller/filetransfer/complete"
 #define CONTROL_TOPIC_SUB   "led/control/"
+#define PROFILE_TOPIC_SUB   "led/sunrise/"
+#define OTA_TOPIC_SUB       "led/ota/"
+
 #define DEVICE_TOPIC_PUB   "led/device/"
 
 
@@ -115,8 +118,9 @@
 #define SERVER1_TIME_PROPERTY "time_24"
 #define SERVER1_DATE_PROPERTY "date"
 
-
-
+#define SERVER2_DOMAIN_NAME "184.169.181.179"
+#define SERVER2_PATH "/api/sunrise-profiles/Soft Glow"
+#define SERVER2_PORT 3004
 
 
 

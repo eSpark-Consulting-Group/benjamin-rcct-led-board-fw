@@ -4,12 +4,48 @@
 
 const char server1[] = SERVER1_DOMAIN_NAME;
 const char server1_path[] = SERVER1_CONFIG_PATH;
-String responsejsonString ="";
 
+const char server2[] = SERVER2_DOMAIN_NAME;
+const char server2_path[] = SERVER2_PATH;
+uint16_t server2_port = SERVER2_PORT;
+
+String responsejsonString ="";
+String response2jsonString ="";
 
 
 WiFiClient client_new;
 
+void  HTTPManager::httpGetServer2Response() {
+  HttpClient http2(client_new);
+
+   int err = http2.get(server2, server2_port ,server2_path);
+        if (err == 0) {
+            Serial.println("startedRequest ok");
+
+            err = http2.responseStatusCode();
+            if (err >= 0) {
+                Serial.print("Got status code: ");
+                Serial.println(err);
+            }
+            else{
+              Serial.println("Request failed with status code: " + String(err));           
+            }
+        }
+        if (err == 400){
+            String response;
+            while (http2.available()) {
+                  char c = http2.read();
+                  response += c;
+
+
+              }
+            //Extract JSON from Response
+            response2jsonString = JSONManager::jsonExtractFromString(response); 
+            
+            Serial.println("Response while loop:"+ response2jsonString);
+        }
+        MQTTManager::profileNameRecivedFlag(true ,false ,false);     
+}
 
 void HTTPManager::httpGetAPIResponse() {
   HttpClient http1(client_new);
@@ -95,7 +131,6 @@ void HTTPManager::extractDateAndTimeFromAPIResponse() {
       extractDateFromAPIResponse();
 
 }
-
 
 
 

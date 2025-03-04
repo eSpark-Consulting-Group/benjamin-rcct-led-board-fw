@@ -11,6 +11,9 @@ char subtopic1[] = CHUNK_TOPIC_1_SUB;
 char subtopic2[] = CHUNK_TOPIC_2_SUB;
 char subtopic3[] = CHUNK_TOPIC_3_SUB ;
 char controltopic[50] = CONTROL_TOPIC_SUB;
+char profiletopic[50] = PROFILE_TOPIC_SUB;
+char otatopic[50] = OTA_TOPIC_SUB;
+
 
 //PUBLISHING TOPICS
 char devicetopic[50] = DEVICE_TOPIC_PUB;
@@ -22,7 +25,7 @@ String fileBuffer = "";
 int totalChunks = 0;
 int receivedChunks = 0;
 
-
+bool profileNameRecived =false;
 
 
 void conc(){
@@ -38,7 +41,16 @@ void conc(){
     } else {
         Serial.println("Buffer overflow risk!");
     }
-
+    if (strlen(profiletopic) + strlen(macStrrecived) < sizeof(profiletopic)) {
+        strcat(profiletopic, macStrrecived);
+    } else {
+        Serial.println("Buffer overflow risk!");
+    }
+    if (strlen(otatopic) + strlen(macStrrecived) < sizeof(otatopic)) {
+        strcat(otatopic, macStrrecived);
+    } else {
+        Serial.println("Buffer overflow risk!");
+    }
 }
 
 void MQTTManager::init() {
@@ -79,7 +91,9 @@ void MQTTManager::attemptConnection() {
                   client.subscribe(subtopic1);
                   client.subscribe(subtopic2);
                   client.subscribe(subtopic3);
+                  client.subscribe(profiletopic);
                   client.subscribe(controltopic);
+                  client.subscribe(otatopic);
                   // client.publish(devicetopic, devicetopic_payload);
 
               } else {
@@ -97,18 +111,24 @@ bool MQTTManager::isConnected() {
     return client.connected();
 }
 
+bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read ){
+    if(write == true){
+        profileNameRecived= write_val;
+    }
+    else if(read == true){
+      return(profileNameRecived);
+    }
+    return(profileNameRecived) ;
+
+}
+
 void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     Serial.print("MQTT JSON recieved [");  
     Serial.print(topic);
     Serial.print("] ");
     
     String message;       //430 bytes per chunk limit
-    // fileBuffer.reserve(76 * 1024);  // Request 76KB
-    // if (fileBuffer.length() == 0) {
-    //     Serial.println("Memory allocated successfully.");
-    // } else {
-    //     Serial.println("Memory allocation failed.");
-    // }
+
     
     for (unsigned int i = 0; i < length; i++) {
         message += (char)payload[i];
@@ -139,7 +159,7 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
 
             Serial.println("All chunks received. Parsing JSON...");
  
-            // JSONManager::parse_mqtt_JSON(fileBuffer);
+
             // TODO: Handle the parsed JSON data
         } else {
             Serial.println("Error: Incomplete file transfer!");
@@ -147,7 +167,35 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
 
     }
     else if(String(topic) == controltopic ){
-            JSONManager::parse_mqtt_JSON(message);
+
+            LED::getInstance().ledconfig.power =JSONManager::parse_JSON(message, "power");
+            LED::getInstance().ledconfig.color.colorString =JSONManager::parse_JSON(message, "color");
+            LED::getInstance().ledconfig.effect =JSONManager::parse_JSON(message, "effect");
+            LED::getInstance().ledconfig.speed= (uint16_t)atoi((JSONManager::parse_JSON(message, "speed")).c_str());
+            LED::getInstance().ledconfig.brightness= (uint16_t)atoi((JSONManager::parse_JSON(message, "brightness")).c_str());
+
            
+            Serial.println("Power: " + LED::getInstance().ledconfig.power) ;
+            Serial.println("Color: " +LED::getInstance().ledconfig.color.colorString) ;
+            Serial.println("Effect: " +LED::getInstance().ledconfig.effect) ;
+            Serial.print("Brightness: " );  Serial.println(LED::getInstance().ledconfig.brightness) ;          
+            Serial.print("Speed: " );  Serial.println(LED::getInstance().ledconfig.speed) ;
+            LED::single_input_recieved_flag(true,true,false);
+
     }
+    else if(String(topic) == profiletopic ){
+        profileNameRecived = true;
+        LED::getInstance().ledconfig.profileName =JSONManager::parse_JSON(message, "profileName");
+        Serial.println("Profile Name: " +LED::getInstance().ledconfig.profileName );
+
+    }
+    else if(String(topic) == otatopic ){
+        LED::getInstance().ledconfig.ota.version=JSONManager::parse_JSON(message, "ota.version");
+        LED::getInstance().ledconfig.ota.url=JSONManager::parse_JSON(message, "ota.url");
+
+        Serial.println("Version: " +LED::getInstance().ledconfig.ota.version );
+        Serial.println("URL: " +LED::getInstance().ledconfig.ota.url );
+
+    }
+    
 }

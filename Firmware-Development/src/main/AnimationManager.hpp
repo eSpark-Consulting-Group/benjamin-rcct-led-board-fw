@@ -3,7 +3,8 @@
 #include <Arduino.h>
 
 #include "config.hpp"
-#include "SingleInput.hpp"
+#include "LED.hpp"
+
 
 // #include "FlashManager.hpp"
 // #include "pwmout_api.h"

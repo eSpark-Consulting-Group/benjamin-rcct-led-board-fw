@@ -4,28 +4,54 @@ String ssidChunks[SSID_JSON_MAX_CHUNKS];
 int totalChunksSsidJson = 0;
 
 
-String JSONManager::parse_JSON(String inputJSON , String property){
-            String propertyValue;
-            JSON.stringify(inputJSON);
-            JSONVar data_JSON = JSON.parse(inputJSON);
-            if (JSON.typeof(data_JSON) == "undefined") {
-                Serial.println("Failed to parse JSON!");
-                return("Failed to parse JSON!");
-            }
-            Serial.println("Parsed JSON:");
-            Serial.println(JSON.stringify(data_JSON));
-            
-              if (data_JSON.hasOwnProperty(property)){                  
-                   propertyValue = (const char*)data_JSON[property];
-                   return(propertyValue);
-                  
-              }
-              else{
-                return("invalid property");
-              }
+
+String JSONManager::parse_JSON(String inputJSON, String property) {
+  JSONVar data_JSON = JSON.parse(inputJSON);
+
+      if (JSON.typeof(data_JSON) == "undefined") {
+          Serial.println("Failed to parse JSON!");
+          return "Failed to parse JSON!";
+      }
+
+      Serial.println("Parsed JSON:");
+      Serial.println(JSON.stringify(data_JSON));
+
+      // Split property path by dots for nested keys (e.g., "address.city")
+      int dotIndex = property.indexOf(".");
+      if (dotIndex == -1) {
+          // If no dot, return the property directly
+          if (data_JSON.hasOwnProperty(property)) {
+              return convertToString(data_JSON[property]);
+          }
+      } else {
+          // Handle nested properties
+          String firstKey = property.substring(0, dotIndex);
+          String remainingPath = property.substring(dotIndex + 1);
+
+          if (data_JSON.hasOwnProperty(firstKey) && JSON.typeof(data_JSON[firstKey]) == "object") {
+              // Recursively call parse_JSON on the nested object
+              return parse_JSON(JSON.stringify(data_JSON[firstKey]), remainingPath);
+          }
+      }
+
+      return "Invalid property";
 }
 
-
+String JSONManager::convertToString(JSONVar value) {
+     String type = JSON.typeof(value);
+  
+      if (type == "string") {
+          return (const char*)value;
+      } else if (type == "number") {
+          return String((double)value);
+      } else if (type == "boolean") {
+          return value ? "true" : "false";
+      } else if (type == "array" || type == "object") {
+          return JSON.stringify(value); // Return JSON as string
+      }
+      
+      return "Unknown Type";
+}
 
 String* JSONManager::chunks_ssid_JSON(){
   return(ssidChunks);
@@ -106,64 +132,6 @@ String JSONManager::make_mqtt_JSON(){
 }
 
 
-
-
-void JSONManager::parse_ble_JSON(String ble_data){
-
-        String parsed_ssid,parsed_password;
-        ble_data.trim();
-        Serial.print("Received BLE JSON: ");
-        Serial.println(ble_data);
-        JSONVar creds = JSON.parse(ble_data);
-
-            if (creds.hasOwnProperty("ssid") && creds.hasOwnProperty("password")) {     //for WIFI CREDS
-                  WiFiManager::credrecievedFlag( true, true ,false );
-                  Serial.print("Wi-Fi Credentials written by connection ");
-                  parsed_ssid = (const char*)creds["ssid"];
-                  parsed_password = (const char*)creds["password"];
-
-                  Serial.print("Parsed SSID: ");
-                  Serial.println(parsed_ssid);
-
-                  if (parsed_ssid.length() >= SSID_BUFF_LEN || parsed_password.length() >= PASS_BUFF_LEN) {
-                  Serial.println("Error: SSID or Password too long!");
-                  return;}
-
-                  FlashManager::save_wifi_creds(parsed_ssid , parsed_password );
-
-              }
-
-
-}
-
-void JSONManager::parse_mqtt_JSON(String mqtt_data){
-            JSONVar mqtt_JSON = JSON.parse(mqtt_data);
-            if (JSON.typeof(mqtt_JSON) == "undefined") {
-                Serial.println("Failed to parse JSON!");
-                return;
-            }
-            Serial.println("Parsed MQTT JSON:");
-            Serial.println(JSON.stringify(mqtt_JSON));
-
-
-                if (mqtt_JSON.hasOwnProperty("color") && mqtt_JSON.hasOwnProperty("temperature") && mqtt_JSON.hasOwnProperty("brightness")) {
-                    SingleInput::single_input_recieved_flag( true , true ,false);
-                    SingleInput::getInstance().config.color = (const char *)mqtt_JSON["color"];
-                    SingleInput::getInstance().config.temperature = (uint16_t)mqtt_JSON["temperature"];
-                    SingleInput::getInstance().config.brightness = (uint16_t)mqtt_JSON["brightness"];
- 
-                    Serial.println("Parsed Values:");
-                    Serial.println("Color: " + SingleInput::getInstance().config.color);
-                    Serial.println("Temperature: " + String(SingleInput::getInstance().config.temperature));
-                    Serial.println("Brightness: " + String(SingleInput::getInstance().config.brightness));
-                    
-                    SingleInput::config_bright_color_temp();
-
-
-              }
-
-
-}
 
 //Extract JSON from Response
 String JSONManager::jsonExtractFromString(String &response){

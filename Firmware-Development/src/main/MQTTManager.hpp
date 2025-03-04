@@ -16,7 +16,7 @@ public:
     static void loop();
     static void disconnect();
     static void publish_JSON();
-
+    static bool profileNameRecivedFlag( bool write , bool write_val ,bool read );
 };
 
 

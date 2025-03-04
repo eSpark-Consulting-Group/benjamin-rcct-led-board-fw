@@ -8,7 +8,7 @@
 #include "BLEManager.hpp"
 #include "MQTTManager.hpp"
 #include "WiFiManager.hpp"
-#include "SingleInput.hpp"
+#include "LED.hpp"
 #include "FlashManager.hpp"
 #include "config.hpp"
 
@@ -23,6 +23,9 @@ class JSONManager{
         static String make_mqtt_JSON();
         static String parse_JSON(String inputJSON , String property);
         static void parse_ble_JSON(String ble_data);        
-        static void parse_mqtt_JSON(String mqtt_data);
         static String jsonExtractFromString(String &response);
+
+
+      private:
+        static String convertToString(JSONVar value); 
 };

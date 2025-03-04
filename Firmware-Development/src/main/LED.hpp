@@ -4,31 +4,45 @@
 #include "pwmout_api.h"
 #include "config.hpp"
 
+   
 
 typedef struct  {
-    String color = DEFAULT_COLOR;
-    uint16_t temperature = DEFAULT_TEMP;
-    uint16_t brightness= DEFAULT_BRIGHTNESS;
- 
-}Config ;
+    String power;
+    String effect;
 
-typedef struct {
-    int red =0;
-    int green=0;
-    int blue=0;
-}rgb;
+    struct {
+        String colorString;
+        int red;
+        int green;
+        int blue;
+    } color;
+
+    String profileName;
+    uint16_t brightness;
+    uint16_t speed;
+
+    struct {
+        String version;
+        String url;
+    }ota;
+    
+    uint16_t temperature;
+
+}LEDConfig ;
 
 
-class SingleInput {
+
+class LED {
   public:
 
-    static SingleInput& getInstance() {
-        static SingleInput instance;
+    static LED& getInstance() {
+        static LED instance;
         return instance;
     }
 
-    Config config;  // Global struct instance
-    rgb RGB;
+    LEDConfig config;  // Global struct instance
+    LEDConfig ledconfig;
+
     pwmout_t pwm_red;
     pwmout_t pwm_cool_white;
     pwmout_t pwm_warm_white;
@@ -41,7 +55,7 @@ class SingleInput {
 
 
   private:
-    SingleInput() {}  // Private constructor (singleton)
+    LED() {}  // Private constructor (singleton)
     static void hexToRGB(const String& hex, int& red, int& green, int& blue) ;
     static void config_brightness();
     static void config_temperature();

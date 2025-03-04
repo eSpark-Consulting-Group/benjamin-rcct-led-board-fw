@@ -12,10 +12,11 @@
 
 class WiFiManager {
   public:
-   
+    static void init();
     static void attemptWiFiConnection();
+    // static bool wifiCredsCheck();
     static bool credrecievedFlag( bool write , bool write_val ,bool read );
-    static void networkScanner();
+    static void networkScanner(); 
     static String printEncryptionTypeEx(uint32_t thisType);
     
   private:

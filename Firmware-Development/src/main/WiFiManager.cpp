@@ -7,6 +7,12 @@ bool credentialsReceived=false;
 
 
 
+void WiFiManager::init(){
+
+    attemptWiFiConnection();
+}
+
+
 bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
     if(write == true){
         credentialsReceived= write_val;
@@ -41,12 +47,20 @@ bool WiFiManager::ssidExists(String ssid, String list) {
 }
 
 
+// bool WiFiManager::wifiCredsCheck(){
+//     if ((ssidBuf[0] == 0 || ssidBuf[0] == 0xFF) && (passBuf[0] == 0 || passBuf[0] == 0xFF)) {
+//         Serial.println("No valid creds found. Waiting for BLE credentials...");
+//         return false;  // Exit without setting Wi-Fi credentials
+//     }
+//     return true;
+// }
 
 
 
 void WiFiManager::attemptWiFiConnection() {
       
     FlashManager::load_wifi_creds(wifiSsid , wifiPassword);
+  
 
     Serial.println("Connecting to Wi-Fi...");
     
@@ -56,6 +70,7 @@ void WiFiManager::attemptWiFiConnection() {
     strcpy(ssid_buf, wifiSsid.c_str());
     strcpy(pass_buf, wifiPassword.c_str());
 
+    Serial.println("pass");
     WiFi.begin(ssid_buf, pass_buf);
 
     unsigned long startAttemptTime = millis();
@@ -63,8 +78,8 @@ void WiFiManager::attemptWiFiConnection() {
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
 
-        vTaskDelay(pdMS_TO_TICKS(500)); 
         Serial.print(".");
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     if (WiFi.status() == WL_CONNECTED) {
@@ -80,6 +95,7 @@ void WiFiManager::attemptWiFiConnection() {
         BLEManager::updateDeviceStatus();   
         Serial.println("\nFailed to connect to Wi-Fi.");
     }
+    
 }
 
 String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {

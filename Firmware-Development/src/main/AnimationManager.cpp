@@ -22,6 +22,8 @@ const float cool_white_values[] = {
 };
 
 
+
+
 void AnimationManager::runSunriseAnimation() {
   Serial.println("Starting sunrise sequence...");
   int steps = sizeof(warm_white_values) / sizeof(warm_white_values[0]);
@@ -40,7 +42,7 @@ void AnimationManager::runSunriseAnimation() {
     setSunriseAnimationValues(duty_cycle3_warm, duty_cycle2_cool, duty_cycle1_red);
     vTaskDelay(pdMS_TO_TICKS((SUNRISE_DURATION*1000 )/steps));
   }
-  SingleInput::config_bright_color_temp();
+  LED::config_bright_color_temp();
   Serial.println("Sunrise sequence completed.");
 }
 
@@ -48,9 +50,9 @@ void AnimationManager::runSunriseAnimation() {
 
 void AnimationManager::setSunriseAnimationValues(float warm_value, float cool_value, float red_value) {
 
-  pwmout_write(&SingleInput::getInstance().pwm_warm_white, warm_value);
-  pwmout_write(&SingleInput::getInstance().pwm_red, red_value);
-  pwmout_write(&SingleInput::getInstance().pwm_cool_white, cool_value);
+  pwmout_write(&LED::getInstance().pwm_warm_white, warm_value);
+  pwmout_write(&LED::getInstance().pwm_red, red_value);
+  pwmout_write(&LED::getInstance().pwm_cool_white, cool_value);
 
 }
 

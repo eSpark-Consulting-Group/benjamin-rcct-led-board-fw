@@ -83,9 +83,24 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     Serial.println(connID);
 
     if (chr->getDataLen() > 0) {
-        JSONManager::parse_ble_JSON(chr->readString()); //BLE DATA PARSE
+        // JSONManager::parse_ble_JSON(chr->readString()); //BLE DATA PARSE
+        String parsed_ssid = JSONManager::parse_JSON(chr->readString(), "ssid") ;
+        String parsed_password =  JSONManager::parse_JSON(chr->readString(), "password") ;
+        if((parsed_ssid.startsWith("Invalid property")) || (parsed_password.startsWith("Invalid property"))){
+            Serial.println("Invalid Command");
+            return;
+        }
+        else{
+            WiFiManager::credrecievedFlag( true, true ,false );
+            Serial.print("Wi-Fi Credentials written by connection ");
+            Serial.print("Parsed SSID: ");
+            Serial.println(parsed_ssid);
 
-
+            if (parsed_ssid.length() >= SSID_BUFF_LEN || parsed_password.length() >= PASS_BUFF_LEN) {
+            Serial.println("Error: SSID or Password too long!");
+            return;}        
+            FlashManager::save_wifi_creds(parsed_ssid , parsed_password );
+        }
     }
 }
 

@@ -19,7 +19,7 @@ class HTTPManager{
 
         static void httpGetAPIResponse() ;
         static void extractDateAndTimeFromAPIResponse();
-
+        static void httpGetServer2Response();
     private:
         static void extractTimeFromAPIResponse();
         static void extractDateFromAPIResponse();
