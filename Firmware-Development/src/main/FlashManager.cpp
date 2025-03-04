@@ -56,7 +56,7 @@ void FlashManager::load_wifi_creds(String &ssid, String &pass) {
 
 //     FlashMemory.update();  // Commit to non-volatile memory
 
-//     Serial.println("Single input values saved.");
+
 // }
 
 // void FlashManager::load_single_input_vals(String &col, uint16_t &temp, uint16_t &bright) {
