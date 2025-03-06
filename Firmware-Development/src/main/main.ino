@@ -26,6 +26,7 @@ void taskMajor(void* pvParameters) {
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
+            example_ota_http();
             HTTPManager::httpGetAPIResponse() ;
             HTTPManager::extractDateAndTimeFromAPIResponse();
             RTCManager::syncRTCDateAndTime();
@@ -33,8 +34,8 @@ void taskMajor(void* pvParameters) {
             MQTTManager::attemptConnection();
         }
 
-        if ((LED::single_input_recieved_flag(false,false,true) == true)) {
-            LED::config_bright_color_temp();
+        if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
+            LED::configureLED();
         }
 
         if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
@@ -52,7 +53,7 @@ void taskMajor(void* pvParameters) {
             xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 2048, NULL, 1, &taskAnimationExecuteHandle);        
         }
 
-        if(MQTTManager::profileNameRecivedFlag(false ,false ,true) ==true){
+        if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){
             HTTPManager::httpGetServer2Response() ;            
         }
 
@@ -91,8 +92,7 @@ void setup() {
     BLEManager::init();
     RTCManager::init();
     MQTTManager::init();
-    OTAManager::init();
-    LED::PWM_init();
+    LED::init();
 
     xTaskCreate(taskMajor, "taskMajor", 4096, NULL, 2, NULL);
     xTaskCreate(taskMinor, "taskMinor", 2048, NULL, 1, NULL);

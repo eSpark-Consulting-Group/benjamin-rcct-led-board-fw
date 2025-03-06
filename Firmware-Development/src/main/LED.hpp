@@ -4,17 +4,18 @@
 #include "pwmout_api.h"
 #include "config.hpp"
 
-   
+#include "MQTTManager.hpp"
+
 
 typedef struct  {
-    String power;
+    bool power;
     String effect;
 
     struct {
         String colorString;
+        int coolWhite;
         int red;
-        int green;
-        int blue;
+        int warmWhite;
     } color;
 
     String profileName;
@@ -40,26 +41,23 @@ class LED {
         return instance;
     }
 
-    LEDConfig config;  // Global struct instance
     LEDConfig ledconfig;
 
-    pwmout_t pwm_red;
-    pwmout_t pwm_cool_white;
-    pwmout_t pwm_warm_white;
+    pwmout_t pwmCoolWhite;
+    pwmout_t pwmRed;
+    pwmout_t pwmWarmWhite;
 
-    static void PWM_init();
-    static void config_bright_color_temp();
-    static bool  single_input_recieved_flag( bool write , bool write_val ,bool read);
+    static void init();
+    static void configureLED();
 
 
 
 
   private:
     LED() {}  // Private constructor (singleton)
-    static void hexToRGB(const String& hex, int& red, int& green, int& blue) ;
-    static void config_brightness();
-    static void config_temperature();
-    static void config_color();
+    static void hexToCRW(const String& hex, int& red, int& green, int& blue) ;
+    static void configBrightness();
+    static void configColor();
 
   
 };

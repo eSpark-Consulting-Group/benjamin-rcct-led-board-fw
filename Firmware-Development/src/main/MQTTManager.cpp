@@ -26,6 +26,7 @@ int totalChunks = 0;
 int receivedChunks = 0;
 
 bool profileNameRecived =false;
+bool ledConfigRecieved=false;
 
 
 void conc(){
@@ -122,6 +123,16 @@ bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read
 
 }
 
+bool MQTTManager::ledConfigRecievedFlag( bool write , bool write_val ,bool read){
+    if(write == true){
+        ledConfigRecieved= write_val;
+    }
+    else if(read == true){
+      return(ledConfigRecieved);
+    }
+    return (ledConfigRecieved);
+}
+
 void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     Serial.print("MQTT JSON recieved [");  
     Serial.print(topic);
@@ -168,21 +179,28 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     }
     else if(String(topic) == controltopic ){
 
-            LED::getInstance().ledconfig.power =JSONManager::parse_JSON(message, "power");
+            if(JSONManager::parse_JSON(message, "power").startsWith("true")){
+                LED::getInstance().ledconfig.power = true;
+            }
+            else if(JSONManager::parse_JSON(message, "power").startsWith("false")){
+                LED::getInstance().ledconfig.power = false;
+            }                               
+
             LED::getInstance().ledconfig.color.colorString =JSONManager::parse_JSON(message, "color");
             LED::getInstance().ledconfig.effect =JSONManager::parse_JSON(message, "effect");
             LED::getInstance().ledconfig.speed= (uint16_t)atoi((JSONManager::parse_JSON(message, "speed")).c_str());
             LED::getInstance().ledconfig.brightness= (uint16_t)atoi((JSONManager::parse_JSON(message, "brightness")).c_str());
 
            
-            Serial.println("Power: " + LED::getInstance().ledconfig.power) ;
+            Serial.print("Power: "); Serial.println( LED::getInstance().ledconfig.power) ;
             Serial.println("Color: " +LED::getInstance().ledconfig.color.colorString) ;
             Serial.println("Effect: " +LED::getInstance().ledconfig.effect) ;
             Serial.print("Brightness: " );  Serial.println(LED::getInstance().ledconfig.brightness) ;          
             Serial.print("Speed: " );  Serial.println(LED::getInstance().ledconfig.speed) ;
-            LED::single_input_recieved_flag(true,true,false);
+             ledConfigRecieved=true;
 
     }
+
     else if(String(topic) == profiletopic ){
         profileNameRecived = true;
         LED::getInstance().ledconfig.profileName =JSONManager::parse_JSON(message, "profileName");
