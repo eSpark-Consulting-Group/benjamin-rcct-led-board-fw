@@ -15,35 +15,77 @@ String response2jsonString ="";
 
 WiFiClient client_new;
 
-void  HTTPManager::httpGetServer2Response() {
-  HttpClient http2(client_new);
+void HTTPManager::httpGetServer2Response() {
+      HttpClient http2(client_new);
 
-   int err = http2.get(server2, server2_port ,server2_path);
-        if (err == 0) {
-            Serial.println("startedRequest ok");
+      int err = http2.get(server2, server2_port, server2_path);
+      if (err == 0) {
+          Serial.println("startedRequest ok");
 
-            err = http2.responseStatusCode();
-            if (err >= 0) {
-                Serial.print("Got status code: ");
-                Serial.println(err);
-            }
-            else{
+          err = http2.responseStatusCode();
+          if (err >= 0) {
+              Serial.print("Got status code: ");
+              Serial.println(err);
+          } else {
               Serial.println("Request failed with status code: " + String(err));           
-            }
-        }
-        if (err == 400){
-            String response;
-            while (http2.available()) {
-                  char c = http2.read();
-                  response += c;
+              return;
+          }
+      }
 
+      int byteCount = 0;
+      int32_t tempWord = 0;  // Temporary 4-byte buffer
+      int wordByteIndex = 0;  // Tracks how many bytes are in tempWord
+      uint32_t flashAddress = 0x0100; // Start writing at 0x0100
 
+      if (err == SERVER2_SUCCESS_CODE) {
+              // Skip HTTP headers
+              while (http2.available()) {
+                  String line = http2.readStringUntil('\n');  // Read line-by-line
+                  if (line == "\r") {  // Headers end with an empty line (\r\n\r\n)
+                      break;
+                  }
               }
-            //Extract JSON from Response
-            response2jsonString = JSONManager::jsonExtractFromString(response); 
-            
-            Serial.println("Response while loop:"+ response2jsonString);
-        }
+              int byteCount = 0;
+              Serial.println("Binary Data:");
+              
+              // Read binary data
+              while (http2.available()) {
+                uint8_t value = http2.read();  // Read raw binary byte-by-byte
+                
+                if (byteCount >= 12) { // Skip first 12 bytes 
+                    Serial.print(value,DEC);
+                    Serial.print(",");
+        
+                    // Collect 4 bytes into a 32-bit word
+                    tempWord |= (value << (wordByteIndex * 8)); 
+                    wordByteIndex++;
+        
+                    // When 4 bytes are collected, write to flash
+                    if (wordByteIndex == 4) {
+                        FlashMemory.writeWord(flashAddress, tempWord);
+
+                        flashAddress += 4;  // Move to next flash word
+                        tempWord = 0;       // Reset temp buffer
+                        wordByteIndex = 0;  // Reset byte counter
+                    }
+                }
+        
+                byteCount++;
+            }
+            Serial.println("\nData read complete.");
+            Serial.println("\nVerifying Flash Memory:");
+            Serial.println(byteCount);
+
+            uint32_t flashAddress = 0x0100; // Start reading from 0x0100
+            for (int i = 0; i < (byteCount-12) / 4; i++) {  // Divide byteCount by 4 to get the number of words
+                uint32_t storedValue = FlashMemory.readWord(flashAddress);
+                Serial.print(storedValue);
+                Serial.print(",");
+                
+                flashAddress += 4;  // Move to the next word
+            }
+      }
+
         MQTTManager::profileNameRecivedFlag(true ,false ,false);     
 }
 
@@ -63,6 +105,17 @@ void HTTPManager::httpGetAPIResponse() {
               Serial.println("Request failed with status code: " + String(err));           
             }
         }
+
+        if (err == SERVER2_SUCCESS_CODE) {
+          // Skip HTTP headers
+          while (http1.available()) {
+              String line = http1.readStringUntil('\n');  // Read line-by-line
+              if (line == "\r") {  // Headers end with an empty line (\r\n\r\n)
+                  break;
+              }
+          }
+        }
+
         if (err == SERVER1_SUCCESS_CODE){
             String response;
             while (http1.available()) {
@@ -71,6 +124,7 @@ void HTTPManager::httpGetAPIResponse() {
 
 
               }
+              Serial.println("[response] =" + response);
             //Extract JSON from Response
             responsejsonString = JSONManager::jsonExtractFromString(response);
             Serial.println("Response while loop:"+ responsejsonString);
@@ -132,5 +186,59 @@ void HTTPManager::extractDateAndTimeFromAPIResponse() {
 
 }
 
+
+void HTTPManager::getResponse(const char* serverName, uint16_t serverPort , const char* path ) {
+    HttpClient http2(client_new);
+
+    int err = http2.get(server2, server2_port, server2_path);
+    if (err == 0) {
+        Serial.println("startedRequest ok");
+
+        err = http2.responseStatusCode();
+        if (err >= 0) {
+            Serial.print("Got status code: ");
+            Serial.println(err);
+        } else {
+            Serial.println("Request failed with status code: " + String(err));           
+            return;
+        }
+    }
+
+    if (err == SERVER2_SUCCESS_CODE) {
+        // Skip HTTP headers
+        while (http2.available()) {
+            String line = http2.readStringUntil('\n');  // Read line-by-line
+            if (line == "\r") {  // Headers end with an empty line (\r\n\r\n)
+                break;
+            }
+        }
+        int byteCount = 0;
+        Serial.println("Binary Data:");
+
+
+
+        if (err == SERVER1_SUCCESS_CODE){
+            String response;
+            while (http1.available()) {
+                  char c = http1.read();
+                  response += c;
+
+
+              }
+              Serial.println("[response] =" + response);
+
+            while (http2.available()) {
+                uint8_t value = http2.read();  // Read raw binary byte-by-byte
+
+
+
+
+
+
+
+
+
+
+}
 
 

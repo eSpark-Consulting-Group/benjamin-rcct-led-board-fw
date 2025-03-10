@@ -3,7 +3,8 @@
     {
       "name": "windows-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**" ,
+        "C:/Users/eSpark/AppData/Local/Arduino15/packages/realtek/hardware/AmebaD/**"
       ],
       "compilerPath": "C:/gcc/bin/gcc.exe",
       "cStandard": "${default}",

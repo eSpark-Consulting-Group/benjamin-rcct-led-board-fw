@@ -9,6 +9,8 @@
 
 #include "JSONManager.hpp"
 #include "RTCManager.hpp"
+#include "FlashManager.hpp"
+
 #include "config.hpp"
 
 

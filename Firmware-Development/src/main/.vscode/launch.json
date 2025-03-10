@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/GitHub/benjamin-rcctledboard-fw/Firmware-Development/src/main",
-      "program": "d:/GitHub/benjamin-rcctledboard-fw/Firmware-Development/src/main/build/Debug/outDebug",
+      "cwd": "d:/esp_projects/combo_sunrise_and_individual/main",
+      "progra m": "d:/esp_projects/combo_sunrise_and_individual/main/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

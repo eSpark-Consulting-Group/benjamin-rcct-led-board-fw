@@ -118,9 +118,14 @@
 #define SERVER1_TIME_PROPERTY "time_24"
 #define SERVER1_DATE_PROPERTY "date"
 
-#define SERVER2_DOMAIN_NAME "184.169.181.179"
-#define SERVER2_PATH "/api/sunrise-profiles/Soft Glow"
-#define SERVER2_PORT 3004
+// #define SERVER2_DOMAIN_NAME "184.169.181.179"
+// #define SERVER2_PATH "/api/sunrise-profiles/Soft Glow"
+// #define SERVER2_PORT 3004
+
+#define SERVER2_DOMAIN_NAME "192.168.2.148"
+#define SERVER2_PATH "/output_data.bin"
+#define SERVER2_PORT 80
+#define SERVER2_SUCCESS_CODE 200
 
 
 

@@ -84,7 +84,7 @@ void taskAnimationExecute(void *pvParameters) {
 
 void setup() {
     Serial.begin(115200);
-    FlashMemory.begin(FLASH_MEMORY_APP_BASE, 0x1000);
+    FlashMemory.begin(FLASH_MEMORY_APP_BASE, 0x19000);
     FlashMemory.read();
 
 
