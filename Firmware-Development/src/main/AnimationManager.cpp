@@ -28,10 +28,6 @@ void AnimationManager::runSunriseAnimation() {
   Serial.println("Starting sunrise sequence...");
   int steps = sizeof(warm_white_values) / sizeof(warm_white_values[0]);
   for (int i = 0; i < steps; i++) {
-    // if (stopRequested) {
-    //   Serial.println("Sunrise sequence interrupted.");
-    //   return;
-    // }
 
     float duty_cycle1_red = red_values[i]/ MAX_DUTY_VAL;
     float duty_cycle2_cool = cool_white_values[i]/ MAX_DUTY_VAL;
@@ -57,9 +53,27 @@ void AnimationManager::setSunriseAnimationValues(float warm_value, float cool_va
 }
 
 
+void AnimationManager::runProfile(){
+    
+  uint32_t timeDiff= AnimationManager::timeDiff();
+  for (uint32_t i = 0; i < elements; i++) {  // Divide byteCount by 4 to get the number of words
+    uint32_t storedValue = FlashMemory.readWord(offsetAddress);
+    Serial.print(storedValue);
+    Serial.print(",");
+    
+    offsetAddress += 4;  // Move to the next word
+}
 
 
+}
 
+uin32_t AnimationManager::timeDiff(){
+  uin32_t time1 =FlashManager:readWord(0x0100);
+  uin32_t time2 =FlashManager:readWord(0x0100 + 4);
+  
+  return(time2-time1);
+
+}
 
 
 

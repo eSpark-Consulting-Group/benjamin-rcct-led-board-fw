@@ -1,4 +1,4 @@
-#define CONFIG_EXAMPLE_OTA_HTTP     
+// #define CONFIG_EXAMPLE_OTA_HTTP     
 #define HTTP_OTA_UPDATE
 
 #if defined(CONFIG_PLATFORM_8711B)

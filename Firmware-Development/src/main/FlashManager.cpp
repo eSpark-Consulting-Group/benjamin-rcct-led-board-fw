@@ -44,5 +44,26 @@ void FlashManager::load_wifi_creds(String &ssid, String &pass) {
   }
 
 
+uint32_t FlashManager:readWord(uint32_t offsetAddress){
+    uint32_t storedValue = FlashMemory.readWord(offsetAddress);
+    return(storedValue);
+
+}
+
+void FlashManager::writeWord( uint32_t buffer , uint32_t address ){
+    FlashMemory.writeWord(address, buffer);
+}
 
 
+void FlashManager::verifyData( uint32_t offsetAddress, uint32_t elements){
+
+    for (uint32_t i = 0; i < elements; i++) {  // Divide byteCount by 4 to get the number of words
+        uint32_t storedValue = FlashMemory.readWord(offsetAddress);
+        Serial.print(storedValue);
+        Serial.print(",");
+        
+        offsetAddress += 4;  // Move to the next word
+    }
+
+
+}

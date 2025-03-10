@@ -15,7 +15,6 @@
 TaskHandle_t taskAnimationExecuteHandle = NULL;
 TaskHandle_t taskNetworkScannerHandle = NULL;
 
-
 void taskMajor(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));    
 
@@ -27,7 +26,7 @@ void taskMajor(void* pvParameters) {
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
             example_ota_http();
-            HTTPManager::httpGetAPIResponse() ;
+            HTTPManager::getRealTime() ;
             HTTPManager::extractDateAndTimeFromAPIResponse();
             RTCManager::syncRTCDateAndTime();
             RTCManager::setExecutionTime();
@@ -53,17 +52,23 @@ void taskMajor(void* pvParameters) {
             xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 2048, NULL, 1, &taskAnimationExecuteHandle);        
         }
 
-        if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){
-            HTTPManager::httpGetServer2Response() ;            
-        }
-
         RTCManager::printDateAndTime();       
         vTaskDelay(pdMS_TO_TICKS(300));
     }
 }
 
+void taskProfileFetch(void *pvParameters) {   
+    while(1){ 
+        if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){  
+              HTTPManager::getProfile();
 
-void taskMinor(void *pvParameters) {   
+        }
+      vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
+    }
+
+}
+
+void taskMQTT(void *pvParameters) {   
     while(1){ 
       MQTTManager::loop();
       // MQTTManager::publish_JSON();
@@ -71,6 +76,7 @@ void taskMinor(void *pvParameters) {
     }
 
 }
+
 
 void taskNetworkScanner(void *pvParameters) {
     WiFiManager::networkScanner();
@@ -94,8 +100,9 @@ void setup() {
     MQTTManager::init();
     LED::init();
 
-    xTaskCreate(taskMajor, "taskMajor", 4096, NULL, 2, NULL);
-    xTaskCreate(taskMinor, "taskMinor", 2048, NULL, 1, NULL);
+    xTaskCreate(taskMajor, "taskMajor", 2048, NULL, 2, NULL);
+    xTaskCreate(taskMQTT, "taskMQTT", 2048, NULL, 1, NULL);
+    xTaskCreate(taskProfileFetch, "taskProfileFetch", 2048, NULL, 1, NULL);
 
 }
 

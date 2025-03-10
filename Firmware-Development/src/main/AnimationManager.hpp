@@ -6,7 +6,7 @@
 #include "LED.hpp"
 
 
-// #include "FlashManager.hpp"
+#include "FlashManager.hpp"
 // #include "pwmout_api.h"
 
 class AnimationManager{

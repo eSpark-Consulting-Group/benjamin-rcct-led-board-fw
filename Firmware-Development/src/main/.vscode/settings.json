@@ -82,6 +82,9 @@
     "cmsis_os.h": "c",
     "wiring_os.h": "c",
     "cstddef": "cpp",
-    "limits": "cpp"
+    "limits": "cpp",
+    "*.tcc": "cpp",
+    "memory": "cpp",
+    "variant": "cpp"
   }
 }
