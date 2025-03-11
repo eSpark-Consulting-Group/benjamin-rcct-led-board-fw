@@ -32,6 +32,8 @@ class HTTPManager{
         static void extractDateAndTimeFromAPIResponse();
         static void httpGetServer2Response();
         static void getProfile();
+        static int getByteCount();
+
     private:
         static int16_t getStatusCode(ServerInfo *serverInf ,HttpClient *http);
         static void readHttpHeaders(HttpClient *http);

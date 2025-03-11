@@ -5,17 +5,17 @@
 #include "WiFiManager.hpp"
 #include "MQTTManager.hpp"
 #include "LED.hpp"
-#include "AnimationManager.hpp"
+#include "ProfileManager.hpp"
 #include "RTCManager.hpp"
 #include "HTTPManager.hpp"
 #include "OTAManager.hpp"
-// #include "config.hpp"
+#include "config.hpp"
 
 
-TaskHandle_t taskAnimationExecuteHandle = NULL;
-TaskHandle_t taskNetworkScannerHandle = NULL;
+TaskHandle_t runProfileHandle = NULL;
+TaskHandle_t networkScannerHandle = NULL;
 
-void taskMajor(void* pvParameters) {
+void mainTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));    
 
     while (1) {           
@@ -38,7 +38,7 @@ void taskMajor(void* pvParameters) {
         }
 
         if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
-            xTaskCreate(taskNetworkScanner, "taskNetworkScanner", 2048, NULL, 1, &taskNetworkScannerHandle);        
+            xTaskCreate(networkScanner, "networkScanner", 2048, NULL, 1, &networkScannerHandle);        
         }
 
         if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
@@ -49,7 +49,7 @@ void taskMajor(void* pvParameters) {
         }
 
         if(RTCManager::executionTimeCheck() == true){
-            xTaskCreate(taskAnimationExecute, "taskAnimationExecute", 2048, NULL, 1, &taskAnimationExecuteHandle);        
+            xTaskCreate(runProfile, "runProfile", 2048, NULL, 1, &runProfileHandle);        
         }
 
         RTCManager::printDateAndTime();       
@@ -57,18 +57,19 @@ void taskMajor(void* pvParameters) {
     }
 }
 
-void taskProfileFetch(void *pvParameters) {   
+void profileHandlerTask(void *pvParameters) {   
     while(1){ 
         if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){  
               HTTPManager::getProfile();
-
+            //  ProfileManager::runProfile();
+            //  ProfileManager::runSunriseProfile();
         }
       vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
     }
 
 }
 
-void taskMQTT(void *pvParameters) {   
+void mqttHandlerTask(void *pvParameters) {   
     while(1){ 
       MQTTManager::loop();
       // MQTTManager::publish_JSON();
@@ -78,31 +79,30 @@ void taskMQTT(void *pvParameters) {
 }
 
 
-void taskNetworkScanner(void *pvParameters) {
+void networkScanner(void *pvParameters) {
     WiFiManager::networkScanner();
     vTaskDelete(NULL);  
 }
 
-void taskAnimationExecute(void *pvParameters) {
-    AnimationManager::runSunriseAnimation();
+void runProfile(void *pvParameters) {
+    ProfileManager::runSunriseProfile();
+    ProfileManager::runProfile();
     vTaskDelete(NULL);  
 }
 
 void setup() {
     Serial.begin(115200);
-    FlashMemory.begin(FLASH_MEMORY_APP_BASE, 0x19000);
-    FlashMemory.read();
 
 
-    
+    FlashManager::init();
     BLEManager::init();
     RTCManager::init();
     MQTTManager::init();
     LED::init();
 
-    xTaskCreate(taskMajor, "taskMajor", 2048, NULL, 2, NULL);
-    xTaskCreate(taskMQTT, "taskMQTT", 2048, NULL, 1, NULL);
-    xTaskCreate(taskProfileFetch, "taskProfileFetch", 2048, NULL, 1, NULL);
+    xTaskCreate(mainTask, "mainTask", 2048, NULL, 2, NULL);
+    xTaskCreate(mqttHandlerTask, "mqttHandlerTask", 2048, NULL, 1, NULL);
+    xTaskCreate(profileHandlerTask, "profileHandlerTask", 2048, NULL, 1, NULL);
 
 }
 

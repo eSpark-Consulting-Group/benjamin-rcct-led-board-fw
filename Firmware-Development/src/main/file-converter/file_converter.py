@@ -28,10 +28,10 @@ print(f"Binary data saved to {bin_file_path}")
 endpoint_url = "http://your-http-endpoint.com/upload"  # Replace with actual endpoint
 headers = {"Content-Type": "application/octet-stream"}  # Sending as binary
 
-try:
-    with open(bin_file_path, "rb") as bin_file:
-        response = requests.post(endpoint_url, data=bin_file, headers=headers)
-    print(f"Response Code: {response.status_code}")
-    print(f"Response Body: {response.text}")
-except Exception as e:
-    print(f"Error: {e}")
+# try:
+#     with open(bin_file_path, "rb") as bin_file:
+#         response = requests.post(endpoint_url, data=bin_file, headers=headers)
+#     print(f"Response Code: {response.status_code}")
+#     print(f"Response Body: {response.text}")
+# except Exception as e:
+#     print(f"Error: {e}")

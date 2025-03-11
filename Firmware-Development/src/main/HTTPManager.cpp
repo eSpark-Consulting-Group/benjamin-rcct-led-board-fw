@@ -1,5 +1,6 @@
 #include "HTTPManager.hpp"
 
+int byteCount = 0;
 
 
 const char server1[] = SERVER1_DOMAIN_NAME;
@@ -96,6 +97,9 @@ void HTTPManager::extractDateAndTimeFromAPIResponse() {
 
 }
 
+int HTTPManager::getByteCount(){
+    return(byteCount);
+}
 
 void HTTPManager::getProfile() {
     HttpClient http(client_new);
@@ -114,10 +118,12 @@ void HTTPManager::getProfile() {
 
     readHttpHeaders(&http);                                               //skip http headers
 
-    int byteCount = 0;
+    byteCount = 0;
     uint32_t tempWord = 0;  // Temporary 4-byte buffer
     int wordByteIndex = 0;  // Tracks how many bytes are in tempWord
-    uint32_t flashAddress = 0x0100; // Start writing at 0x0100
+    uint32_t flashAddress = PROFILE_START_ADDR; // Start writing at PROFILE_START_ADDR
+
+
 
     while (http.available()) {
         uint8_t value = http.read();  // Read raw binary byte-by-byte
@@ -131,10 +137,10 @@ void HTTPManager::getProfile() {
             wordByteIndex++;
 
             // When 4 bytes are collected, write to flash
-            if (wordByteIndex == 4) {
+            if (wordByteIndex == WORD_SIZE) {
                 FlashManager::writeWord( tempWord, flashAddress);
 
-                flashAddress += 4;  // Move to next flash word
+                flashAddress += WORD_SIZE;  // Move to next flash word
                 tempWord = 0;       // Reset temp buffer
                 wordByteIndex = 0;  // Reset byte counter
             }
@@ -145,7 +151,7 @@ void HTTPManager::getProfile() {
         Serial.println("\nData read complete.");
         Serial.println("\nVerifying Flash Memory:");
         Serial.println(byteCount);
-        FlashManager::verifyData(0x0100 ,(byteCount-12) / 4);
+        FlashManager::verifyData(PROFILE_START_ADDR ,(byteCount-12) / WORD_SIZE);
      
     MQTTManager::profileNameRecivedFlag(true ,false ,false);     
                 

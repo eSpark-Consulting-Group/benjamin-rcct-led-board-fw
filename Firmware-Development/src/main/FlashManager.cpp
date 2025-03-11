@@ -2,6 +2,14 @@
 
 
 
+
+
+void FlashManager::init(){
+    FlashMemory.begin(FLASH_MEMORY_BASE, FLASH_INIT_SIZE);
+    FlashMemory.read();
+}
+
+
 void FlashManager::save_wifi_creds(String ssid , String pass){
       memset(FlashMemory.buf, 0, MEMSET_BUFF_LEN_WIFICREDS);
       strcpy((char *)(FlashMemory.buf + FLASH_SSID_OFFSET), ssid.c_str());
@@ -44,7 +52,8 @@ void FlashManager::load_wifi_creds(String &ssid, String &pass) {
   }
 
 
-uint32_t FlashManager:readWord(uint32_t offsetAddress){
+
+uint32_t FlashManager::readWord(uint32_t offsetAddress){
     uint32_t storedValue = FlashMemory.readWord(offsetAddress);
     return(storedValue);
 
@@ -62,7 +71,7 @@ void FlashManager::verifyData( uint32_t offsetAddress, uint32_t elements){
         Serial.print(storedValue);
         Serial.print(",");
         
-        offsetAddress += 4;  // Move to the next word
+        offsetAddress += WORD_SIZE;  // Move to the next word
     }
 
 

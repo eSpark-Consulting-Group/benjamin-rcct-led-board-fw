@@ -1,4 +1,4 @@
-#include "AnimationManager.hpp"
+#include "ProfileManager.hpp"
 
 
 const float red_values[] = { 
@@ -24,18 +24,18 @@ const float cool_white_values[] = {
 
 
 
-void AnimationManager::runSunriseAnimation() {
+void ProfileManager::runSunriseProfile() {
   Serial.println("Starting sunrise sequence...");
   int steps = sizeof(warm_white_values) / sizeof(warm_white_values[0]);
   for (int i = 0; i < steps; i++) {
 
-    float duty_cycle1_red = red_values[i]/ MAX_DUTY_VAL;
-    float duty_cycle2_cool = cool_white_values[i]/ MAX_DUTY_VAL;
-    float duty_cycle3_warm = warm_white_values[i]/ MAX_DUTY_VAL;
+    float duty_cycle1_red = red_values[i]/ MAX_PWM_VAL;
+    float duty_cycle2_cool = cool_white_values[i]/ MAX_PWM_VAL;
+    float duty_cycle3_warm = warm_white_values[i]/ MAX_PWM_VAL;
 
 
     // Update the PWM values
-    setSunriseAnimationValues(duty_cycle3_warm, duty_cycle2_cool, duty_cycle1_red);
+    setLEDPWM( duty_cycle2_cool, duty_cycle1_red , duty_cycle3_warm);
     vTaskDelay(pdMS_TO_TICKS((SUNRISE_DURATION*1000 )/steps));
   }
   LED::configureLED();
@@ -43,39 +43,55 @@ void AnimationManager::runSunriseAnimation() {
 }
 
 
+void ProfileManager::runProfile(){
+  uint32_t offsetAddress = PROFILE_START_ADDR;
+  uint32_t timeDelay= ProfileManager::timeDiff(offsetAddress);
+  uint32_t diff = timeDelay;
+  Serial.print("[runProfile] timediff:");Serial.println(timeDelay);
+  int rows = (HTTPManager::getByteCount())/16;
 
-void AnimationManager::setSunriseAnimationValues(float warm_value, float cool_value, float red_value) {
+    // while (timeDelay == diff){
+    for(uint32_t i=0 ; i<rows ; i++){
+        if(rows>0){                        //starts incrementing from second iteration
+            offsetAddress += WORD_SIZE;  
+          }
 
-  pwmout_write(&LED::getInstance().pwmWarmWhite, warm_value);
-  pwmout_write(&LED::getInstance().pwmRed, red_value);
-  pwmout_write(&LED::getInstance().pwmCoolWhite, cool_value);
+        diff = ProfileManager::timeDiff(offsetAddress);
+        offsetAddress += WORD_SIZE;
 
+        float redDutyCycle = ((float)FlashManager::readWord(offsetAddress))/MAX_PWM_VAL;
+        offsetAddress += WORD_SIZE;  
+        float warmWhiteDutyCycle = ((float)FlashManager::readWord(offsetAddress))/MAX_PWM_VAL; //the sequence of these depends on the profile excel file
+        offsetAddress += WORD_SIZE;          
+        float coolWhiteDutyCycle = ((float)FlashManager::readWord(offsetAddress))/MAX_PWM_VAL;
+      
+
+        Serial.print("[runProfile] coolWhiteDutyCycle :");Serial.print(coolWhiteDutyCycle);
+        Serial.print("  redDutyCycle :");Serial.print(redDutyCycle);
+        Serial.print("  warmWhiteDutyCycle :");Serial.println(warmWhiteDutyCycle);Serial.print("  row number: ");Serial.println(i);
+
+        setLEDPWM(coolWhiteDutyCycle,redDutyCycle,warmWhiteDutyCycle);
+        // vTaskDelay((pdMS_TO_TICKS(1000))*timeDelay);
+        vTaskDelay((pdMS_TO_TICKS(1000))*0.01);
+      }
+  LED::configureLED();
 }
 
-
-void AnimationManager::runProfile(){
-    
-  uint32_t timeDiff= AnimationManager::timeDiff();
-  for (uint32_t i = 0; i < elements; i++) {  // Divide byteCount by 4 to get the number of words
-    uint32_t storedValue = FlashMemory.readWord(offsetAddress);
-    Serial.print(storedValue);
-    Serial.print(",");
-    
-    offsetAddress += 4;  // Move to the next word
-}
-
-
-}
-
-uin32_t AnimationManager::timeDiff(){
-  uin32_t time1 =FlashManager:readWord(0x0100);
-  uin32_t time2 =FlashManager:readWord(0x0100 + 4);
+uint32_t ProfileManager::timeDiff( uint32_t offsetAddress){
+  uint32_t time1 =FlashManager::readWord(offsetAddress);
+  uint32_t time2 =FlashManager::readWord(offsetAddress + 16);
   
   return(time2-time1);
 
 }
 
+void ProfileManager::setLEDPWM(float coolWhiteDuty, float redDuty, float warmWhiteDuty) {
 
+  pwmout_write(&LED::getInstance().pwmCoolWhite, coolWhiteDuty);
+  pwmout_write(&LED::getInstance().pwmRed, redDuty);
+  pwmout_write(&LED::getInstance().pwmWarmWhite, warmWhiteDuty);
+
+}
 
 
 

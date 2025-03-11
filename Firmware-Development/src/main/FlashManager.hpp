@@ -12,6 +12,7 @@
 
 class FlashManager{
   public:
+    static void init();
     static void save_wifi_creds(String ssid , String pass);
     static void load_wifi_creds(String &ssid , String &pass);
     static void writeWord( uint32_t buffer , uint32_t address );
