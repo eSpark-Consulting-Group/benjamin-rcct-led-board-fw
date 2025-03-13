@@ -85,6 +85,7 @@
     "limits": "cpp",
     "*.tcc": "cpp",
     "memory": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "set": "cpp"
   }
 }

@@ -8,9 +8,8 @@
 #include "ProfileManager.hpp"
 #include "RTCManager.hpp"
 #include "HTTPManager.hpp"
-#include "OTAManager.hpp"
 #include "config.hpp"
-
+#include "AnchorhttpOTA.h"
 
 TaskHandle_t runProfileHandle = NULL;
 TaskHandle_t networkScannerHandle = NULL;
@@ -25,7 +24,7 @@ void mainTask(void* pvParameters) {
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
-            example_ota_http();
+            otaStart();
             HTTPManager::getRealTime() ;
             HTTPManager::extractDateAndTimeFromAPIResponse();
             RTCManager::syncRTCDateAndTime();
