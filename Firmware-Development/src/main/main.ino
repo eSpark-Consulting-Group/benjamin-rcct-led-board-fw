@@ -8,11 +8,13 @@
 #include "ProfileManager.hpp"
 #include "RTCManager.hpp"
 #include "HTTPManager.hpp"
+#include "OTAManager.hpp"
 #include "config.hpp"
-#include "AnchorhttpOTA.h"
+
 
 TaskHandle_t runProfileHandle = NULL;
 TaskHandle_t networkScannerHandle = NULL;
+TaskHandle_t OTAUpdateTaskHandle = NULL;
 
 void mainTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));    
@@ -24,12 +26,16 @@ void mainTask(void* pvParameters) {
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
-            otaStart();
-            HTTPManager::getRealTime() ;
+
+            HTTPManager::getRealTime();
             HTTPManager::extractDateAndTimeFromAPIResponse();
             RTCManager::syncRTCDateAndTime();
             RTCManager::setExecutionTime();
             MQTTManager::attemptConnection();
+        }
+
+        if ((MQTTManager::getOtaUpdateAvailable() == true)) {
+            xTaskCreate(OTAUpdateTask, "OTAUpdateTask", 2048, NULL, 1, &OTAUpdateTaskHandle);        
         }
 
         if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
@@ -56,6 +62,8 @@ void mainTask(void* pvParameters) {
     }
 }
 
+
+
 void profileHandlerTask(void *pvParameters) {   
     while(1){ 
         if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){  
@@ -66,6 +74,12 @@ void profileHandlerTask(void *pvParameters) {
       vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
     }
 
+}
+
+void OTAUpdateTask(void *pvParameters) {
+    MQTTManager::setOtaUpdateAvailable(false);   
+    OTAManager::beginHttpOTA();
+    vTaskDelete(NULL);  
 }
 
 void mqttHandlerTask(void *pvParameters) {   

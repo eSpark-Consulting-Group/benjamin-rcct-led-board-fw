@@ -13,6 +13,7 @@ char subtopic3[] = CHUNK_TOPIC_3_SUB ;
 char controltopic[50] = CONTROL_TOPIC_SUB;
 char profiletopic[50] = PROFILE_TOPIC_SUB;
 char otatopic[50] = OTA_TOPIC_SUB;
+char otaupdate[50] = "led/ota/all";
 
 
 //PUBLISHING TOPICS
@@ -27,7 +28,7 @@ int receivedChunks = 0;
 
 bool profileNameRecived =false;
 bool ledConfigRecieved=false;
-
+bool otaUpdateAvailable=false;
 
 void conc(){
 
@@ -95,6 +96,7 @@ void MQTTManager::attemptConnection() {
                   client.subscribe(profiletopic);
                   client.subscribe(controltopic);
                   client.subscribe(otatopic);
+                  client.subscribe(otaupdate);
                   // client.publish(devicetopic, devicetopic_payload);
 
               } else {
@@ -131,6 +133,14 @@ bool MQTTManager::ledConfigRecievedFlag( bool write , bool write_val ,bool read)
       return(ledConfigRecieved);
     }
     return (ledConfigRecieved);
+}
+
+void MQTTManager::setOtaUpdateAvailable(bool state){
+    otaUpdateAvailable =state;
+}
+
+bool MQTTManager::getOtaUpdateAvailable(){
+    return(otaUpdateAvailable);
 }
 
 void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
@@ -215,5 +225,10 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
         Serial.println("URL: " +LED::getInstance().ledconfig.ota.url );
 
     }
-    
+    else if(String(topic) == otaupdate ){
+        if(JSONManager::parse_JSON(message, "message").startsWith("New OTA update available")){
+            otaUpdateAvailable = true;
+        }
+
+    }
 }

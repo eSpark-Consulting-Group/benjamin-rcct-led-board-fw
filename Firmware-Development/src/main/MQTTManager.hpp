@@ -18,6 +18,8 @@ public:
     static void publish_JSON();
     static bool profileNameRecivedFlag( bool write , bool write_val ,bool read );
     static bool  ledConfigRecievedFlag( bool write , bool write_val ,bool read);
+    static bool getOtaUpdateAvailable();
+    static void setOtaUpdateAvailable(bool state);
 
 };
 
