@@ -2,16 +2,6 @@
 
 int byteCount = 0;
 
-
-const char server1[] = SERVER1_DOMAIN_NAME;
-const char server1_path[] = SERVER1_CONFIG_PATH;
-uint16_t server1_port = SERVER1_PORT;
-
-
-const char server2[] = SERVER2_DOMAIN_NAME;
-const char server2_path[] = SERVER2_PATH;
-uint16_t server2_port = SERVER2_PORT;
-
 String responsejsonString ="";
 
 
@@ -24,9 +14,9 @@ void HTTPManager::getRealTime() {
     ServerInfo serverInf;
 
 
-    serverInf.serverName = server1;
-    serverInf.path = server1_path;
-    serverInf.serverPort = server1_port;
+    serverInf.serverName = SERVER1_DOMAIN_NAME;
+    serverInf.path = SERVER1_CONFIG_PATH;
+    serverInf.serverPort = SERVER1_PORT;
     serverInf.successCode = SERVER1_SUCCESS_CODE;
 
     if(getStatusCode(&serverInf ,&http) !=   serverInf.successCode){       //get status code
@@ -105,9 +95,9 @@ void HTTPManager::getProfile() {
     HttpClient http(client_new);
     ServerInfo serverInf;
 
-    serverInf.serverName = server2;
-    serverInf.path = server2_path;
-    serverInf.serverPort = server2_port;
+    serverInf.serverName = SERVER2_DOMAIN_NAME;
+    serverInf.path = SERVER2_PATH;
+    serverInf.serverPort = SERVER2_PORT;
     serverInf.successCode = SERVER2_SUCCESS_CODE;
 
     if(getStatusCode(&serverInf ,&http) !=   serverInf.successCode){       //get status code

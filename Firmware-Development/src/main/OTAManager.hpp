@@ -20,5 +20,11 @@ class OTAManager{
 
 };
 
+struct {
+    String version;
+    String url;
+}ota;
+
+
 
 extern OTAManager otaManage;

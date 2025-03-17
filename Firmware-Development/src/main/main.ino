@@ -86,7 +86,7 @@ void OTAUpdateTask(void *pvParameters) {
 void mqttHandlerTask(void *pvParameters) {   
     while(1){ 
       MQTTManager::loop();
-      // MQTTManager::publishLedStatePayload();
+    //   MQTTManager::publishLedStatePayload();
       vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
     }
 

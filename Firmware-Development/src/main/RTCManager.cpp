@@ -86,7 +86,6 @@ bool RTCManager::executionTimeCheck(){
               }
               
             else{
-              // Serial.println("Timer Running");
                 return false;
             }
         

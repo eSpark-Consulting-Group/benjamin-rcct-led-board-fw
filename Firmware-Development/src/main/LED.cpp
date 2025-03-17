@@ -4,28 +4,25 @@
 
 static uint16_t brightnessRes;
 
-
+LED& led = LED::getInstance();
 
 
 void LED::init(){
     
-    pwmout_init(&LED::getInstance().pwmCoolWhite, (PinName)COOL_WHITE_PIN);
-    pwmout_period(&LED::getInstance().pwmCoolWhite, TIME_PERIOD);   
+    pwmout_init(&led.pwmCoolWhite, (PinName)COOL_WHITE_PIN);
+    pwmout_period(&led.pwmCoolWhite, TIME_PERIOD);   
 
-    pwmout_init(&LED::getInstance().pwmRed, (PinName)RED_PIN);
-    pwmout_period(&LED::getInstance().pwmRed, TIME_PERIOD); 
+    pwmout_init(&led.pwmRed, (PinName)RED_PIN);
+    pwmout_period(&led.pwmRed, TIME_PERIOD); 
 
 
-    pwmout_init(&LED::getInstance().pwmWarmWhite, (PinName)WARM_WHITE_PIN);
-    pwmout_period(&LED::getInstance().pwmWarmWhite, TIME_PERIOD);
+    pwmout_init(&led.pwmWarmWhite, (PinName)WARM_WHITE_PIN);
+    pwmout_period(&led.pwmWarmWhite, TIME_PERIOD);
 
-    pwmout_write(&LED::getInstance().pwmCoolWhite, 0);
-    pwmout_write(&LED::getInstance().pwmRed, 0);
-    pwmout_write(&LED::getInstance().pwmWarmWhite, 0);
+    pwmout_write(&led.pwmCoolWhite, 0);
+    pwmout_write(&led.pwmRed, 0);
+    pwmout_write(&led.pwmWarmWhite, 0);
 }
-
-
-
 
 void LED::hexToCRW(const String& hex,  int& coolWhite, int& red, int& warmWhite) {
     if (hex.length() != 7 || hex[0] != '#') return;  // Ensure valid hex format
@@ -38,20 +35,20 @@ void LED::hexToCRW(const String& hex,  int& coolWhite, int& red, int& warmWhite)
 }
 
 void LED::configBrightness(){
-    Serial.print("power :") ; Serial.println(LED::getInstance().ledconfig.power);
+    Serial.print("power :") ; Serial.println(led.config.power);
 
-        if (LED::getInstance().ledconfig.brightness > MAX_BRIGHTNESS) {
-            LED::getInstance().ledconfig.brightness=MAX_BRIGHTNESS;
+        if (led.config.brightness > MAX_BRIGHTNESS) {
+            led.config.brightness=MAX_BRIGHTNESS;
         }
-        else if (LED::getInstance().ledconfig.brightness < MIN_BRIGHTNESS){
-            LED::getInstance().ledconfig.brightness = MIN_BRIGHTNESS;
+        else if (led.config.brightness < MIN_BRIGHTNESS){
+            led.config.brightness = MIN_BRIGHTNESS;
         }
-        brightnessRes =map(LED::getInstance().ledconfig.brightness, MIN_BRIGHTNESS ,MAX_BRIGHTNESS ,MIN_PWM_VAL ,MAX_PWM_VAL) ;
+        brightnessRes =map(led.config.brightness, MIN_BRIGHTNESS ,MAX_BRIGHTNESS ,MIN_PWM_VAL ,MAX_PWM_VAL) ;
         Serial.println(brightnessRes);
 
-        pwmout_write(&LED::getInstance().pwmCoolWhite, brightnessRes/MAX_PWM_VAL);
-        pwmout_write(&LED::getInstance().pwmRed, brightnessRes/MAX_PWM_VAL);
-        pwmout_write(&LED::getInstance().pwmWarmWhite, brightnessRes/MAX_PWM_VAL);
+        pwmout_write(&led.pwmCoolWhite, brightnessRes/MAX_PWM_VAL);
+        pwmout_write(&led.pwmRed, brightnessRes/MAX_PWM_VAL);
+        pwmout_write(&led.pwmWarmWhite, brightnessRes/MAX_PWM_VAL);
 
 }
 
@@ -60,41 +57,40 @@ void LED::configColor(){
         static uint16_t redPWM; 
         static uint16_t warmWhitePWM;
 
-        Serial.print("[config color] red"); Serial.println(LED::getInstance().ledconfig.color.red);
+        Serial.print("[config color] red"); Serial.println(led.config.color.red);
 
-        coolWhitePWM= map(LED::getInstance().ledconfig.color.coolWhite , MIN_COLOR, MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
-        redPWM = map(LED::getInstance().ledconfig.color.red, MIN_COLOR, MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
-        warmWhitePWM  = map(LED::getInstance().ledconfig.color.warmWhite, MIN_COLOR ,MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
+        coolWhitePWM= map(led.config.color.coolWhite , MIN_COLOR, MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
+        redPWM = map(led.config.color.red, MIN_COLOR, MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
+        warmWhitePWM  = map(led.config.color.warmWhite, MIN_COLOR ,MAX_COLOR,  MIN_PWM_VAL ,brightnessRes);
 
 
         Serial.print("redPWM:"); Serial.println(redPWM);
         Serial.print("brightness res:"); Serial.println(brightnessRes);
         // Apply PWM output
-        pwmout_write(&LED::getInstance().pwmCoolWhite, coolWhitePWM  / MAX_PWM_VAL);
-        pwmout_write(&LED::getInstance().pwmRed,  redPWM / MAX_PWM_VAL);
-        pwmout_write(&LED::getInstance().pwmWarmWhite, warmWhitePWM / MAX_PWM_VAL);
+        pwmout_write(&led.pwmCoolWhite, coolWhitePWM  / MAX_PWM_VAL);
+        pwmout_write(&led.pwmRed,  redPWM / MAX_PWM_VAL);
+        pwmout_write(&led.pwmWarmWhite, warmWhitePWM / MAX_PWM_VAL);
 }
-
 
 
 void LED::configureLED(){
 
     MQTTManager::ledConfigRecievedFlag(true,false,false);
 
-    LED::hexToCRW(LED::getInstance().ledconfig.color.colorString, 
-                     LED::getInstance().ledconfig.color.coolWhite,
-                        LED::getInstance().ledconfig.color.red, 
-                            LED::getInstance().ledconfig.color.warmWhite); 
-    Serial.print("[configureLED ]red"); Serial.println(LED::getInstance().ledconfig.color.red);
+    LED::hexToCRW(led.config.color.colorString, 
+                     led.config.color.coolWhite,
+                        led.config.color.red, 
+                            led.config.color.warmWhite); 
+    Serial.print("[configureLED ]red"); Serial.println(led.config.color.red);
 
-    if(LED::getInstance().ledconfig.power == true ){    
+    if(led.config.power == true ){    
             LED::configBrightness();
             LED::configColor();
         }
-    else if(LED::getInstance().ledconfig.power ==  false){
-        pwmout_write(&LED::getInstance().pwmCoolWhite, 0);
-        pwmout_write(&LED::getInstance().pwmRed, 0);
-        pwmout_write(&LED::getInstance().pwmWarmWhite, 0);
+    else if(led.config.power ==  false){
+        pwmout_write(&led.pwmCoolWhite, 0);
+        pwmout_write(&led.pwmRed, 0);
+        pwmout_write(&led.pwmWarmWhite, 0);
     }
 
 

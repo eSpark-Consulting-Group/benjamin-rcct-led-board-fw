@@ -22,6 +22,7 @@
 #define IMAGE_SECTOR_SIZE 4096
 #define DEFAULT_IMAGE_DOWNLOAD_TIMEOUT 30000
 
+
 class OTAClass {
 
 public:

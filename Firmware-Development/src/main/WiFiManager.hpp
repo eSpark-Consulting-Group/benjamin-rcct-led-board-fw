@@ -22,7 +22,6 @@ class WiFiManager {
   private:
     static bool ssidExists(String ssid, String list);
 
-
 };
 
 

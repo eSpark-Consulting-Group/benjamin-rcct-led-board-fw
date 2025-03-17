@@ -22,15 +22,10 @@ typedef struct{
 
 } ServerInfo;
 
-
-
-
-
 class HTTPManager{
     public:
         static void getRealTime() ;
         static void extractDateAndTimeFromAPIResponse();
-        static void httpGetServer2Response();
         static void getProfile();
         static int getByteCount();
 
@@ -42,6 +37,4 @@ class HTTPManager{
 
         static void extractTimeFromAPIResponse();
         static void extractDateFromAPIResponse();
-
-
 };

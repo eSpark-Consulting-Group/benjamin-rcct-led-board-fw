@@ -22,10 +22,10 @@ typedef struct  {
     uint16_t brightness;
     uint16_t speed;
 
-    struct {
-        String version;
-        String url;
-    }ota;
+    // struct {
+    //     String version;
+    //     String url;
+    // }ota;
     
     uint16_t temperature;
 
@@ -41,7 +41,7 @@ class LED {
         return instance;
     }
 
-    LEDConfig ledconfig;
+    LEDConfig config;
 
     pwmout_t pwmCoolWhite;
     pwmout_t pwmRed;
