@@ -3,6 +3,9 @@
 
 //LED CONFIG
 
+
+
+
 #define FREQUENCY 1000.0f    // 1000 hz                             //PWM CONFIG          
 #define COOL_WHITE_PIN (PinName)  PA_13
 #define RED_PIN (PinName)PA_25  // Example: Casting to PinName          
@@ -15,11 +18,11 @@
 #define SUNRISE_DURATION 60
 
  
-#define POWER         (bool)true      //test JSON vals       
-#define BRIGHTNESS     150
+#define POWER         "true"      //test JSON vals       
+#define BRIGHTNESS     "150"
 #define COLOR         "#FF0000"
 #define EFFECT        "Blink"
-#define SPEED            60  
+#define SPEED            "60"  
 
 #define MIN_BRIGHTNESS   0.0f
 #define MAX_BRIGHTNESS   255.0f
@@ -120,4 +123,7 @@
 #define SERVER2_SUCCESS_CODE 200
 
 
+#define OTA_SERVER_DOMAIN_NAME "184.169.181.179"
+#define OTA_SERVER_PATH "/api/ota"
+#define OTA_SERVER_PORT 3004
 

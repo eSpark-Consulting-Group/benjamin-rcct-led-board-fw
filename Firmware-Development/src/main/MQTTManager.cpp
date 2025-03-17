@@ -69,16 +69,28 @@ void MQTTManager::disconnect(){
   client.disconnect();
 }
 
-void MQTTManager::publish_JSON(){
+void MQTTManager::publishLedStatePayload(){
 
-      String publishable_data = JSONManager::make_mqtt_JSON();
+    const int numProps = 5;
+
+    String keys[numProps] = { "Power", "Brightness", "color","effect" , "speed"};
+
+    String values[numProps] = { 
+            POWER, 
+            BRIGHTNESS, 
+            COLOR,
+            EFFECT,
+            SPEED
+        };
+
+    String payload = JSONManager::makeJSON(numProps, keys, values);
+    
          // Publish JSON string over MQTT
-      if (client.publish(devicetopic, publishable_data.c_str())) {
-          Serial.println("JSON message sent: " + publishable_data);
-      } else {
+    if (client.publish(devicetopic, payload.c_str())) {
+          Serial.println("JSON message sent: " + payload);
+    } else {
           Serial.println("Failed to send JSON message");
-      }
-
+    }
 
 }
 
@@ -189,17 +201,17 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
     }
     else if(String(topic) == controltopic ){
 
-            if(JSONManager::parse_JSON(message, "power").startsWith("true")){
+            if(JSONManager::parseJSON(message, "power").startsWith("true")){
                 LED::getInstance().ledconfig.power = true;
             }
-            else if(JSONManager::parse_JSON(message, "power").startsWith("false")){
+            else if(JSONManager::parseJSON(message, "power").startsWith("false")){
                 LED::getInstance().ledconfig.power = false;
             }                               
 
-            LED::getInstance().ledconfig.color.colorString =JSONManager::parse_JSON(message, "color");
-            LED::getInstance().ledconfig.effect =JSONManager::parse_JSON(message, "effect");
-            LED::getInstance().ledconfig.speed= (uint16_t)atoi((JSONManager::parse_JSON(message, "speed")).c_str());
-            LED::getInstance().ledconfig.brightness= (uint16_t)atoi((JSONManager::parse_JSON(message, "brightness")).c_str());
+            LED::getInstance().ledconfig.color.colorString =JSONManager::parseJSON(message, "color");
+            LED::getInstance().ledconfig.effect =JSONManager::parseJSON(message, "effect");
+            LED::getInstance().ledconfig.speed= (uint16_t)atoi((JSONManager::parseJSON(message, "speed")).c_str());
+            LED::getInstance().ledconfig.brightness= (uint16_t)atoi((JSONManager::parseJSON(message, "brightness")).c_str());
 
            
             Serial.print("Power: "); Serial.println( LED::getInstance().ledconfig.power) ;
@@ -213,20 +225,20 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
 
     else if(String(topic) == profiletopic ){
         profileNameRecived = true;
-        LED::getInstance().ledconfig.profileName =JSONManager::parse_JSON(message, "profileName");
+        LED::getInstance().ledconfig.profileName =JSONManager::parseJSON(message, "profileName");
         Serial.println("Profile Name: " +LED::getInstance().ledconfig.profileName );
 
     }
     else if(String(topic) == otatopic ){
-        LED::getInstance().ledconfig.ota.version=JSONManager::parse_JSON(message, "ota.version");
-        LED::getInstance().ledconfig.ota.url=JSONManager::parse_JSON(message, "ota.url");
+        LED::getInstance().ledconfig.ota.version=JSONManager::parseJSON(message, "ota.version");
+        LED::getInstance().ledconfig.ota.url=JSONManager::parseJSON(message, "ota.url");
 
         Serial.println("Version: " +LED::getInstance().ledconfig.ota.version );
         Serial.println("URL: " +LED::getInstance().ledconfig.ota.url );
 
     }
     else if(String(topic) == otaupdate ){
-        if(JSONManager::parse_JSON(message, "message").startsWith("New OTA update available")){
+        if(JSONManager::parseJSON(message, "message").startsWith("New OTA update available")){
             otaUpdateAvailable = true;
         }
 

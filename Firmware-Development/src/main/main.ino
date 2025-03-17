@@ -41,6 +41,7 @@ void mainTask(void* pvParameters) {
         if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
             LED::configureLED();
         }
+        
 
         if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
             xTaskCreate(networkScanner, "networkScanner", 2048, NULL, 1, &networkScannerHandle);        
@@ -78,14 +79,14 @@ void profileHandlerTask(void *pvParameters) {
 
 void OTAUpdateTask(void *pvParameters) {
     MQTTManager::setOtaUpdateAvailable(false);   
-    OTAManager::beginHttpOTA();
+    otaManage.beginHttpOTA();
     vTaskDelete(NULL);  
 }
 
 void mqttHandlerTask(void *pvParameters) {   
     while(1){ 
       MQTTManager::loop();
-      // MQTTManager::publish_JSON();
+      // MQTTManager::publishLedStatePayload();
       vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
     }
 

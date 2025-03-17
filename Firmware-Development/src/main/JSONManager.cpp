@@ -1,11 +1,11 @@
 #include "JSONManager.hpp"
 
-String ssidChunks[SSID_JSON_MAX_CHUNKS];
-int totalChunksSsidJson = 0;
+String ssidChunkNumber[SSID_JSON_MAX_CHUNKS];
+int totalSSIDChunks = 0;
 
 
 
-String JSONManager::parse_JSON(String inputJSON, String property) {
+String JSONManager::parseJSON(String inputJSON, String property) {
   JSONVar data_JSON = JSON.parse(inputJSON);
 
       if (JSON.typeof(data_JSON) == "undefined") {
@@ -29,8 +29,8 @@ String JSONManager::parse_JSON(String inputJSON, String property) {
           String remainingPath = property.substring(dotIndex + 1);
 
           if (data_JSON.hasOwnProperty(firstKey) && JSON.typeof(data_JSON[firstKey]) == "object") {
-              // Recursively call parse_JSON on the nested object
-              return parse_JSON(JSON.stringify(data_JSON[firstKey]), remainingPath);
+              // Recursively call parseJSON on the nested object
+              return parseJSON(JSON.stringify(data_JSON[firstKey]), remainingPath);
           }
       }
 
@@ -53,25 +53,18 @@ String JSONManager::convertToString(JSONVar value) {
       return "Unknown Type";
 }
 
-String* JSONManager::chunks_ssid_JSON(){
-  return(ssidChunks);
+String* JSONManager::getSSIDChunkNumber(){
+      return(ssidChunkNumber);
 
+} 
+
+int JSONManager::gettotalSSIDChunks(){
+      return(totalSSIDChunks);
 }
 
-int JSONManager::total_chunks_ssid_JSON(){
-      return(totalChunksSsidJson);
-}
-
-
-String JSONManager::make_JSON(String param , String state){
-         JSONVar jsonParam;
-         jsonParam[param] = state;
-          String jsonString = JSON.stringify(jsonParam) ;
-        return(jsonString);
-}
   
 
-void JSONManager::make_ssid_JSON(int n){
+void JSONManager::makeSSIDJSON(int n){
         JSONVar wifiList;
        std::set<String> seenSSIDs;  // To track unique SSIDs
 
@@ -93,43 +86,46 @@ void JSONManager::make_ssid_JSON(int n){
         Serial.print("created JSON:");
         Serial.println(jsonString);
 
-        for (size_t i = 0; i < jsonString.length() && totalChunksSsidJson < SSID_JSON_MAX_CHUNKS; i += SSID_JSON_MAX_SIZE) {
-          ssidChunks[totalChunksSsidJson] = jsonString.substring(i, i + SSID_JSON_MAX_SIZE);
+        for (size_t i = 0; i < jsonString.length() && totalSSIDChunks < SSID_JSON_MAX_CHUNKS; i += SSID_JSON_MAX_SIZE) {
+          ssidChunkNumber[totalSSIDChunks] = jsonString.substring(i, i + SSID_JSON_MAX_SIZE);
             Serial.print("CHUNK DATA:");
-            Serial.println(ssidChunks[totalChunksSsidJson]);
-            totalChunksSsidJson++;
+            Serial.println(ssidChunkNumber[totalSSIDChunks]);
+            totalSSIDChunks++;
           }
         
 }
 
+ String JSONManager::makeJSON(int numProps, const String *keys, const String *values, 
+  int numSubJSONs , const SubJSON *subJSONs ){
 
+      JSONVar jsonData;
 
+      // Add top-level key-value pairs
+      for (int i = 0; i < numProps; i++) {
+        jsonData[keys[i]] = values[i];
+      }
 
-String JSONManager::make_ble_JSON(){
+      // Add sub-JSON objects if provided
+      for (int i = 0; i < numSubJSONs; i++) {
+        addSubJSON(jsonData, subJSONs[i].key, subJSONs[i].numProps, subJSONs[i].keys, subJSONs[i].values);
+      }
 
-    JSONVar deviceStatus;
-    deviceStatus["RCCT MAC ADDRESS "] = BLEManager::getmacStr();
-    deviceStatus["RCCT WiFi STATUS"] = WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected";
-    deviceStatus["WiFi SSID"] = WiFi.SSID();
-    deviceStatus["MQTT SERVER"] = MQTTManager::isConnected() ?  "Connected" : "Disconnected";
-
-    String jsonString = JSON.stringify(deviceStatus);
-    return(jsonString);
- 
+      return JSON.stringify(jsonData);
 }
 
-String JSONManager::make_mqtt_JSON(){
-      JSONVar mqtt_JSON;
-      mqtt_JSON["Power"] = POWER;
-      mqtt_JSON["Brightness"] = BRIGHTNESS;
-      mqtt_JSON["color"] = COLOR;
-      mqtt_JSON["effect"] = EFFECT;
-      mqtt_JSON["speed"] = SPEED;
+void JSONManager::addSubJSON(JSONVar& parent, const String& key, int numProps, 
+        const String *keys, const String *values) {
 
-    
-      return (JSON.stringify(mqtt_JSON));
+      JSONVar subJson;
 
+      for (int i = 0; i < numProps; i++) {
+      subJson[keys[i]] = values[i];
+      }
+      parent[key] = subJson;
 }
+
+
+
 
 
 

@@ -44,7 +44,7 @@ void HTTPManager::getRealTime() {
   }
 
 void HTTPManager::extractTimeFromAPIResponse() {
-      String time = JSONManager::parse_JSON(responsejsonString , SERVER1_TIME_PROPERTY);  
+      String time = JSONManager::parseJSON(responsejsonString , SERVER1_TIME_PROPERTY);  
       Serial.println("time:"+ time);
 
       String hoursStr = time.substring(0, 2);    //for HH:MM:SS   format
@@ -66,7 +66,7 @@ void HTTPManager::extractTimeFromAPIResponse() {
 
 void HTTPManager::extractDateFromAPIResponse(){
 
-      String date = JSONManager::parse_JSON(responsejsonString , SERVER1_DATE_PROPERTY);
+      String date = JSONManager::parseJSON(responsejsonString , SERVER1_DATE_PROPERTY);
       String yearStr = date.substring(0, 4);          //for YYYY-MM-DD  foramt
       String monthStr = date.substring(5, 7);
       String dayStr = date.substring(8, 10);

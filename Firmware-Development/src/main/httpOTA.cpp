@@ -31,7 +31,7 @@ int OTAClass::beginCloud(const char* otaServer, const char* otaServerPath ,uint1
             Serial.println("startedRequest ok");
     
             err = http.responseStatusCode();
-            if (err >= 0) {
+            if (err == 200) {
                 Serial.print("[getStatusCode] Status Code Success  ");Serial.println(err);    
             } else {
                 Serial.println("[getStatusCode]Status Code Failed" );           

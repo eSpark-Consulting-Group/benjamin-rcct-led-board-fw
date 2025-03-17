@@ -34,7 +34,7 @@ void WiFiManager::networkScanner(){
         Serial.println("Couldn't get a wifi connection");
         while (true);
     }
-    JSONManager::make_ssid_JSON(numSsid);
+    JSONManager::makeSSIDJSON(numSsid);
     // print the list of networks seen:
     Serial.print("number of available networks:");
     Serial.println(numSsid);
@@ -45,15 +45,6 @@ void WiFiManager::networkScanner(){
 bool WiFiManager::ssidExists(String ssid, String list) {
     return list.indexOf("\"" + ssid + "\"") != -1; // Check if SSID already exists
 }
-
-
-// bool WiFiManager::wifiCredsCheck(){
-//     if ((ssidBuf[0] == 0 || ssidBuf[0] == 0xFF) && (passBuf[0] == 0 || passBuf[0] == 0xFF)) {
-//         Serial.println("No valid creds found. Waiting for BLE credentials...");
-//         return false;  // Exit without setting Wi-Fi credentials
-//     }
-//     return true;
-// }
 
 
 
