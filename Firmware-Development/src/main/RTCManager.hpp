@@ -44,7 +44,7 @@ class RTCManager{
     }
 
     alarm_t alarm;
-    struct tm *timeinfo;
+    static struct tm *timeinfo;
 
     CurrentTimeInfo crntimeinfo;
     DesiredWakeUpTime destimeinfo;

@@ -1,15 +1,15 @@
 #include "WiFiManager.hpp"
 
-String wifiSsid, wifiPassword;
-String scannedSsids = ""; // Define static variable
+
+String WiFiManager::wifiSsid = "";
+String WiFiManager::wifiPassword = "";
 
 bool credentialsReceived=false;
 
 
-
 void WiFiManager::init(){
 
-    attemptWiFiConnection();
+    connect();
 }
 
 
@@ -48,7 +48,7 @@ bool WiFiManager::ssidExists(String ssid, String list) {
 
 
 
-void WiFiManager::attemptWiFiConnection() {
+void WiFiManager::connect() {
       
     FlashManager::load_wifi_creds(wifiSsid , wifiPassword);
   
@@ -89,39 +89,67 @@ void WiFiManager::attemptWiFiConnection() {
     
 }
 
-String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
+// String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
 
-    switch (thisType) {
-        case SECURITY_OPEN:
-            return "Open";
-            break;
-        case SECURITY_WEP_PSK:
-            return "WEP";
-            break;
-        case SECURITY_WPA_TKIP_PSK:
-            return "WPA TKIP";
-            break;
-        case SECURITY_WPA_AES_PSK:
-            return "WPA AES";
-            break;
-        case SECURITY_WPA2_AES_PSK:
-            return "WPA2 AES";
-            break;
-        case SECURITY_WPA2_TKIP_PSK:
-            return "WPA2 TKIP";
-            break;
-        case SECURITY_WPA2_MIXED_PSK:
-            return "WPA2 Mixed";
-            break;
-        case SECURITY_WPA_WPA2_MIXED:
-            return "WPA/WPA2 AES";
-            break;
-        case SECURITY_WPA3_AES_PSK:
-            return"WPA3 AES";
-            break;
-        case SECURITY_WPA2_WPA3_MIXED:
-            return "WPA2/WPA3";
-        default:
-            return "Unknown";  // Handle unexpected encryption types
+//     switch (thisType) {
+//         case SECURITY_OPEN:
+//             return "Open";
+//             break;
+//         case SECURITY_WEP_PSK:
+//             return "WEP";
+//             break;
+//         case SECURITY_WPA_TKIP_PSK:
+//             return "WPA TKIP";
+//             break;
+//         case SECURITY_WPA_AES_PSK:
+//             return "WPA AES";
+//             break;
+//         case SECURITY_WPA2_AES_PSK:
+//             return "WPA2 AES";
+//             break;
+//         case SECURITY_WPA2_TKIP_PSK:
+//             return "WPA2 TKIP";
+//             break;
+//         case SECURITY_WPA2_MIXED_PSK:
+//             return "WPA2 Mixed";
+//             break;
+//         case SECURITY_WPA_WPA2_MIXED:
+//             return "WPA/WPA2 AES";
+//             break;
+//         case SECURITY_WPA3_AES_PSK:
+//             return"WPA3 AES";
+//             break;
+//         case SECURITY_WPA2_WPA3_MIXED:
+//             return "WPA2/WPA3";
+//         default:
+//             return "Unknown";  // Handle unexpected encryption types
+//     }
+// }
+
+struct EncryptionType {
+    uint32_t type;
+    String name;
+};
+
+String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
+    static const EncryptionType encryptionTypes[] = {
+        {SECURITY_OPEN, "Open"},
+        {SECURITY_WEP_PSK, "WEP"},
+        {SECURITY_WPA_TKIP_PSK, "WPA TKIP"},
+        {SECURITY_WPA_AES_PSK, "WPA AES"},
+        {SECURITY_WPA2_AES_PSK, "WPA2 AES"},
+        {SECURITY_WPA2_TKIP_PSK, "WPA2 TKIP"},
+        {SECURITY_WPA2_MIXED_PSK, "WPA2 Mixed"},
+        {SECURITY_WPA_WPA2_MIXED, "WPA/WPA2 AES"},
+        {SECURITY_WPA3_AES_PSK, "WPA3 AES"},
+        {SECURITY_WPA2_WPA3_MIXED, "WPA2/WPA3"}
+    };
+
+    for (size_t i = 0; i < sizeof(encryptionTypes) / sizeof(encryptionTypes[0]); ++i) {
+        if (encryptionTypes[i].type == thisType) {
+            return encryptionTypes[i].name;
+        }
     }
+
+    return "Unknown";  // Handle unexpected encryption types
 }

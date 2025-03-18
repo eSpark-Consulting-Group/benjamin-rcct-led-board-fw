@@ -2,6 +2,7 @@
 
 
 RTC rtc;
+struct tm* RTCManager::timeinfo = nullptr;
 
 
 void RTCManager::init(){
@@ -53,21 +54,21 @@ void RTCManager::syncRTCDateAndTime(){
 void RTCManager::printDateAndTime(void) {
     int32_t seconds;
     seconds = rtc.Read();
-    RTCManager::getInstance().timeinfo = localtime(&seconds);
+    timeinfo = localtime(&seconds);
 
-    if (RTCManager::getInstance().timeinfo != nullptr) {
+    if (timeinfo != nullptr) {
       Serial.print("Time:       ");
-      Serial.print(RTCManager::getInstance().timeinfo->tm_year + 1900);
+      Serial.print(timeinfo->tm_year + 1900);
       Serial.print("-");
-      Serial.print(RTCManager::getInstance().timeinfo->tm_mon +1 );
+      Serial.print(timeinfo->tm_mon +1 );
       Serial.print("-");
-      Serial.print(RTCManager::getInstance().timeinfo->tm_mday);
+      Serial.print(timeinfo->tm_mday);
       Serial.print(" ");
-      Serial.print(RTCManager::getInstance().timeinfo->tm_hour);
+      Serial.print(timeinfo->tm_hour);
       Serial.print(":");
-      Serial.print(RTCManager::getInstance().timeinfo->tm_min);
+      Serial.print(timeinfo->tm_min);
       Serial.print(":");
-      Serial.println(RTCManager::getInstance().timeinfo->tm_sec);
+      Serial.println(timeinfo->tm_sec);
       } else {
         Serial.println("Failed to convert time.");
     }    
@@ -77,10 +78,10 @@ void RTCManager::printDateAndTime(void) {
 bool RTCManager::executionTimeCheck(){
     int32_t seconds;
     seconds = rtc.Read();
-    RTCManager::getInstance().timeinfo = localtime(&seconds);
-    if((RTCManager::getInstance().timeinfo->tm_hour)  == (RTCManager::getInstance().exectime.executionHour) &&
-            (RTCManager::getInstance().timeinfo->tm_min) == (RTCManager::getInstance().exectime.executionMin) && 
-              (RTCManager::getInstance().timeinfo->tm_sec) == (RTCManager::getInstance().exectime.executionSec) ){
+   timeinfo = localtime(&seconds);
+    if((timeinfo->tm_hour)  == (RTCManager::getInstance().exectime.executionHour) &&
+            (timeinfo->tm_min) == (RTCManager::getInstance().exectime.executionMin) && 
+              (timeinfo->tm_sec) == (RTCManager::getInstance().exectime.executionSec) ){
 
                 return true;
               }

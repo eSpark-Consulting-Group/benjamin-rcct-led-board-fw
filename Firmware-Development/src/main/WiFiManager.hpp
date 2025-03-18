@@ -13,7 +13,7 @@
 class WiFiManager {
   public:
     static void init();
-    static void attemptWiFiConnection();
+    static void connect();
     // static bool wifiCredsCheck();
     static bool credrecievedFlag( bool write , bool write_val ,bool read );
     static void networkScanner(); 
@@ -21,7 +21,8 @@ class WiFiManager {
     
   private:
     static bool ssidExists(String ssid, String list);
-
+    static String wifiSsid;
+    static String wifiPassword;
 };
 
 

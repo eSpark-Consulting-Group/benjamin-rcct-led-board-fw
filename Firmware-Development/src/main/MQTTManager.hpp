@@ -20,6 +20,13 @@ public:
     static bool ledConfigRecievedFlag( bool write , bool write_val ,bool read);
     static bool getOtaUpdateAvailable();
     static void setOtaUpdateAvailable(bool state);
+    static void handleControlTopics(const String &message);
+    static void handleProfileTopic(const String &message);
+    static void handleOtaTopic(const String &message);
+    static void handleOtaUpdate(const String &message);
+    static void handleChunkTopic2Sub(const String &message);
+    static void handleChunkTopic3Sub(const String &message);
+    
 
 };
 
