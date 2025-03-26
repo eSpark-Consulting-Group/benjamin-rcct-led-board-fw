@@ -2,6 +2,7 @@
 
 
 RTC rtc;
+struct tm* RTCManager::timeinfo = nullptr;
 
 
 void RTCManager::init(){
@@ -77,17 +78,15 @@ void RTCManager::printDateAndTime(void) {
 bool RTCManager::executionTimeCheck(){
     int32_t seconds;
     seconds = rtc.Read();
-    RTCManager::getInstance().timeinfo = localtime(&seconds);
-    if((RTCManager::getInstance().timeinfo->tm_hour)  == (RTCManager::getInstance().exectime.executionHour) &&
-            (RTCManager::getInstance().timeinfo->tm_min) == (RTCManager::getInstance().exectime.executionMin) && 
-              (RTCManager::getInstance().timeinfo->tm_sec) == (RTCManager::getInstance().exectime.executionSec) ){
+   timeinfo = localtime(&seconds);
+    if((timeinfo->tm_hour)  == (RTCManager::getInstance().exectime.executionHour) &&
+            (timeinfo->tm_min) == (RTCManager::getInstance().exectime.executionMin) && 
+              (timeinfo->tm_sec) == (RTCManager::getInstance().exectime.executionSec) ){
 
                 return true;
               }
               
             else{
-              // Serial.println("Timer Running");
                 return false;
-            }
-        
+            }       
 }

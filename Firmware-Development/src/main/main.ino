@@ -21,7 +21,7 @@ void mainTask(void* pvParameters) {
 
     while (1) {           
         if ((WiFiManager::credrecievedFlag(false ,false ,true) == true || WiFi.status() != WL_CONNECTED)) {
-                 WiFiManager::attemptWiFiConnection();
+                 WiFiManager::connect();
 
         }
 
