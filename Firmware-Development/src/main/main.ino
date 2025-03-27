@@ -20,7 +20,8 @@ void mainTask(void* pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(2000));    
 
     while (1) {           
-        if ((WiFiManager::credrecievedFlag(false ,false ,true) == true || WiFi.status() != WL_CONNECTED)) {
+        // if ((WiFiManager::credrecievedFlag(false ,false ,true) == true || WiFi.status() != WL_CONNECTED)) {
+            if ((WiFiManager::getCredentialsReceived() == true || WiFi.status() != WL_CONNECTED)) {
                  WiFiManager::connect();
 
         }
@@ -38,19 +39,25 @@ void mainTask(void* pvParameters) {
             xTaskCreate(OTAUpdateTask, "OTAUpdateTask", 2048, NULL, 1, &OTAUpdateTaskHandle);        
         }
 
-        if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
+        // if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
+        if ((MQTTManager::getLedConfigReceived() == true)) {
+            Serial.println("LED Config Recieved getter");
             LED::configureLED();
         }
         
 
-        if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
+        // if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
+            if((BLEManager::getCommandRecieved()) == true){
             xTaskCreate(networkScanner, "networkScanner", 2048, NULL, 1, &networkScannerHandle);        
         }
 
-        if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
+        if((BLEManager::getNotifySSID()) == true){
+        // if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
                 BLEManager::sendSSIDJSONNotifications();
         }
-        if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
+
+        // if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
+        if(BLEManager::getInvalidCommand() ==true){
                 BLEManager::sendInvalidCommandNotifications();
         }
 
@@ -67,7 +74,8 @@ void mainTask(void* pvParameters) {
 
 void profileHandlerTask(void *pvParameters) {   
     while(1){ 
-        if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){  
+        // if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){
+            if(MQTTManager::getProfileNameRecived() == true){
               HTTPManager::getProfile();
             //  ProfileManager::runProfile();
             //  ProfileManager::runSunriseProfile();

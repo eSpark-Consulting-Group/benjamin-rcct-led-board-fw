@@ -57,6 +57,7 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
+    "*.html": "html",
     "array": "cpp",
     "deque": "cpp",
     "string": "cpp",
@@ -87,6 +88,9 @@
     "memory": "cpp",
     "variant": "cpp",
     "set": "cpp",
-    "numeric": "cpp"
+    "numeric": "cpp",
+    "algorithm": "cpp",
+    "xhash": "cpp",
+    "xstring": "cpp"
   }
 }

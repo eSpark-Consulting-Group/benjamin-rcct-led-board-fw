@@ -18,13 +18,18 @@ class BLEManager {
   public:
 
       static void init();
-      static void start();
       static void ble_write_callback(BLECharacteristic* chr, uint8_t connID);
       static void scan_callback(BLECharacteristic* chr, uint8_t connID);
-      static char* getmacStr();
-      static bool commandRecievedFlag( bool write , bool write_val ,bool read );
-      static bool notifySSIDFlag( bool write , bool write_val ,bool read );
-      static bool invalidCommandFlag( bool write , bool write_val ,bool read );
+      static char* getMac();
+      // static bool commandRecievedFlag( bool write , bool write_val ,bool read );
+      // static bool notifySSIDFlag( bool write , bool write_val ,bool read );
+      static void setCommandRecieved(bool value);
+      static bool getCommandRecieved() ;
+      static  void setNotifySSID(bool value);
+      static bool getNotifySSID() ;
+      // static bool invalidCommandFlag( bool write , bool write_val ,bool read );
+      static void setInvalidCommand(bool value);
+      static bool getInvalidCommand() ;
       static void sendInvalidCommandNotifications();
       static void sendSSIDJSONNotifications();
       static void updateDeviceStatus();

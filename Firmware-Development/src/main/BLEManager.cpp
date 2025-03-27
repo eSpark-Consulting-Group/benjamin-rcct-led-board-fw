@@ -53,7 +53,7 @@ void BLEManager::init() {
     BLE.beginPeripheral();
 }
 
-char* BLEManager::getmacStr() {
+char* BLEManager::getMac() {
     // char macStr[18] ;
     return macStr;
 }
@@ -70,7 +70,7 @@ void BLEManager::updateDeviceStatus() {
     String keys[numProps] = { "RCCT MAC ADDRESS", "RCCT WiFi STATUS", "WiFi SSID","MQTT SERVER" };
 
     String values[numProps] = { 
-        BLEManager::getmacStr(), 
+        BLEManager::getMac(), 
         WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected" ,
         WiFi.SSID(),
         MQTTManager::isConnected() ?  "Connected" : "Disconnected"
@@ -101,7 +101,8 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
             return;
         }
         else{
-            WiFiManager::credrecievedFlag( true, true ,false );
+            // WiFiManager::setCredentialsReceived( true, true ,false );
+            WiFiManager::setCredentialsReceived(true);
             Serial.print("Wi-Fi Credentials written by connection ");
             Serial.print("Parsed SSID: ");
             Serial.println(parsed_ssid);
@@ -114,38 +115,62 @@ void BLEManager::ble_write_callback(BLECharacteristic* chr, uint8_t connID) {
     }
 }
 
+// bool BLEManager::notifySSIDFlag( bool write , bool write_val ,bool read ){
+//     if(write == true){
+//         notifySSID= write_val;
+//     }
+//     else if(read == true){
+//       return(notifySSID);
+//     }
+//     return(notifySSID) ;
+// }
 
-
-bool BLEManager::notifySSIDFlag( bool write , bool write_val ,bool read ){
-    if(write == true){
-        notifySSID= write_val;
-    }
-    else if(read == true){
-      return(notifySSID);
-    }
-    return(notifySSID) ;
-
+void BLEManager::setNotifySSID(bool value) {
+    notifySSID = value;
 }
 
-bool BLEManager::commandRecievedFlag( bool write , bool write_val ,bool read ){
-    if(write == true){
-        commandRecieved= write_val;
-    }
-    else if(read == true){
-      return(commandRecieved);
-    }
-    return(commandRecieved) ;
+// Getter
 
+bool BLEManager::getNotifySSID() {
+    return notifySSID;
 }
 
-bool BLEManager::invalidCommandFlag( bool write , bool write_val ,bool read ){
-    if(write == true){
-        invalidCommand= write_val;
-    }
-    else if(read == true){
-      return(invalidCommand);
-    }
-    return(invalidCommand) ;
+// bool BLEManager::commandRecievedFlag( bool write , bool write_val ,bool read ){
+//     if(write == true){
+//         commandRecieved= write_val;
+//     }
+//     else if(read == true){
+//       return(commandRecieved);
+//     }
+//     return(commandRecieved) ;
+// }
+
+void BLEManager::setCommandRecieved(bool value) {
+    commandRecieved = value;
+}
+
+// Getter
+
+bool BLEManager::getCommandRecieved() {
+    return commandRecieved;
+}
+
+// bool BLEManager::invalidCommandFlag( bool write , bool write_val ,bool read ){
+//     if(write == true){
+//         invalidCommand= write_val;
+//     }
+//     else if(read == true){
+//       return(invalidCommand);
+//     }
+//     return(invalidCommand) ;
+// }
+
+void BLEManager::setInvalidCommand(bool value) {
+    invalidCommand = value;
+}
+// Getter
+bool BLEManager::getInvalidCommand() {
+    return invalidCommand;
 }
 
 void BLEManager::scan_callback(BLECharacteristic* chr, uint8_t connID){

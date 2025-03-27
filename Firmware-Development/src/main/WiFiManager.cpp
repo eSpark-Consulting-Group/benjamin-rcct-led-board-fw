@@ -13,19 +13,28 @@ void WiFiManager::init(){
 }
 
 
-bool WiFiManager::credrecievedFlag( bool write , bool write_val ,bool read ){
-    if(write == true){
-        credentialsReceived= write_val;
-    }
-    else if(read == true){
-      return(credentialsReceived);
-    }
-    return(credentialsReceived) ;
+// bool WiFiManager::( bool write , bool write_val ,bool read ){
+//     if(write == true){
+//         credentialsReceived= write_val;
+//     }
+//     else if(read == true){
+//       return(credentialsReceived);
+//     }
+//     return(credentialsReceived) ;
+// }
 
+void WiFiManager::setCredentialsReceived(bool value) {
+    credentialsReceived = value;
+}
+
+// Getter
+bool WiFiManager::getCredentialsReceived() {
+    return credentialsReceived;
 }
 
 void WiFiManager::networkScanner(){
-    BLEManager::commandRecievedFlag(true ,false ,false);
+    // BLEManager::commandRecievedFlag(true ,false ,false);
+    BLEManager::setCommandRecieved(false);
     
     Serial.println("Scanning available networks...");
     Serial.println("** Scan Networks **");
@@ -38,7 +47,8 @@ void WiFiManager::networkScanner(){
     // print the list of networks seen:
     Serial.print("number of available networks:");
     Serial.println(numSsid);
-    BLEManager::notifySSIDFlag(true , true ,false );
+    BLEManager::setNotifySSID(true);
+    // BLEManager::notifySSIDFlag(true , true ,false );
 
 }
 

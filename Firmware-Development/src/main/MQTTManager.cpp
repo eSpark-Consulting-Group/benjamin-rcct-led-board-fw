@@ -32,7 +32,7 @@ bool ledConfigRecieved=false;
 bool otaUpdateAvailable=false;
 
 void conc() {
-    char *macStrrecived = BLEManager::getmacStr();
+    char *macStrrecived = BLEManager::getMac();
     
     // Array of topic pointers
     char *topics[] = {controltopic, devicetopic, profiletopic, otatopic};
@@ -124,25 +124,42 @@ bool MQTTManager::isConnected() {
     return client.connected();
 }
 
-bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read ){
-    if(write == true){
-        profileRecivedFlag= write_val;
-    }
-    else if(read == true){
-      return(profileRecivedFlag);
-    }
-    return(profileRecivedFlag) ;
+// bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read ){
+//     if(write == true){
+//         profileRecivedFlag= write_val;
+//     }
+//     else if(read == true){
+//       return(profileRecivedFlag);
+//     }
+//     return(profileRecivedFlag) ;
+// }
 
+void MQTTManager::setProfileNameRecived(bool value) {
+  profileRecivedFlag = value;
 }
 
-bool MQTTManager::ledConfigRecievedFlag( bool write , bool write_val ,bool read){
-    if(write == true){
-        ledConfigRecieved= write_val;
-    }
-    else if(read == true){
-      return(ledConfigRecieved);
-    }
-    return (ledConfigRecieved);
+// Getter
+bool MQTTManager::getProfileNameRecived()  {
+  return profileRecivedFlag;
+}
+
+// bool MQTTManager::ledConfigRecievedFlag( bool write , bool write_val ,bool read){
+//     if(write == true){
+//         ledConfigRecieved= write_val;
+//     }
+//     else if(read == true){
+//       return(ledConfigRecieved);
+//     }
+//     return (ledConfigRecieved);
+// }
+
+void MQTTManager::setLedConfigReceived(bool value) {
+  ledConfigRecieved = value;
+}
+
+// Getter
+bool MQTTManager::getLedConfigReceived()  {
+  return ledConfigRecieved;
 }
 
 void MQTTManager::setOtaUpdateAvailable(bool state){

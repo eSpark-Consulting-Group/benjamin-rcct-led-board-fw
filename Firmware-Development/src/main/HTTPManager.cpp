@@ -140,7 +140,8 @@ void HTTPManager::getProfile() {
         Serial.println(byteCount);
         FlashManager::verifyData(PROFILE_START_ADDR ,(byteCount-12) / WORD_SIZE);
      
-    MQTTManager::profileNameRecivedFlag(true ,false ,false);     
+    // MQTTManager::profileNameRecivedFlag(true ,false ,false);  
+       MQTTManager::setProfileNameRecived(false);   
                 
 
 }

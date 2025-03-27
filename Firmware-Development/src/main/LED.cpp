@@ -79,7 +79,8 @@ void LED::configColor(){
 
 void LED::configureLED(){
 
-    MQTTManager::ledConfigRecievedFlag(true,false,false);
+    // MQTTManager::ledConfigRecievedFlag(true,false,false);
+    MQTTManager::setLedConfigReceived(false);
 
     LED::hexToCRW(LED::getInstance().ledconfig.color.colorString, 
                      LED::getInstance().ledconfig.color.coolWhite,
