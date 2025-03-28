@@ -11,22 +11,23 @@
 #include "OTAManager.hpp"
 #include "config.hpp"
 
-
 TaskHandle_t runProfileHandle = NULL;
 TaskHandle_t networkScannerHandle = NULL;
 TaskHandle_t OTAUpdateTaskHandle = NULL;
 
-void mainTask(void* pvParameters) {
-    vTaskDelay(pdMS_TO_TICKS(2000));    
+void mainTask(void *pvParameters)
+{
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
-    while (1) {           
-        // if ((WiFiManager::credrecievedFlag(false ,false ,true) == true || WiFi.status() != WL_CONNECTED)) {
-            if ((WiFiManager::getCredentialsReceived() == true || WiFi.status() != WL_CONNECTED)) {
-                 WiFiManager::connect();
-
+    while (1)
+    {
+        if ((WiFiManager::getCredentialsReceived() == true || WiFi.status() != WL_CONNECTED))
+        {
+            WiFiManager::connect();
         }
 
-        if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
+        if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected())
+        {
 
             HTTPManager::getRealTime();
             HTTPManager::extractDateAndTimeFromAPIResponse();
@@ -35,86 +36,89 @@ void mainTask(void* pvParameters) {
             MQTTManager::attemptConnection();
         }
 
-        if ((MQTTManager::getOtaUpdateAvailable() == true)) {
-            xTaskCreate(OTAUpdateTask, "OTAUpdateTask", 2048, NULL, 1, &OTAUpdateTaskHandle);        
+        if ((MQTTManager::getOtaUpdateAvailable() == true))
+        {
+            xTaskCreate(OTAUpdateTask, "OTAUpdateTask", 2048, NULL, 1, &OTAUpdateTaskHandle);
         }
 
-        // if ((MQTTManager::ledConfigRecievedFlag(false,false,true) == true)) {
-        if ((MQTTManager::getLedConfigReceived() == true)) {
+        if ((MQTTManager::getLedConfigReceived() == true))
+        {
             Serial.println("LED Config Recieved getter");
             LED::configureLED();
         }
-        
 
-        // if((BLEManager::commandRecievedFlag(false ,false ,true)) == true){
-            if((BLEManager::getCommandRecieved()) == true){
-            xTaskCreate(networkScanner, "networkScanner", 2048, NULL, 1, &networkScannerHandle);        
+        if ((BLEManager::getCommandRecieved()) == true)
+        {
+            xTaskCreate(networkScanner, "networkScanner", 2048, NULL, 1, &networkScannerHandle);
         }
 
-        if((BLEManager::getNotifySSID()) == true){
-        // if((BLEManager::notifySSIDFlag(false ,false ,true)) == true){
-                BLEManager::sendSSIDJSONNotifications();
+        if ((BLEManager::getNotifySSID()) == true)
+        {
+            BLEManager::sendSSIDJSONNotifications();
         }
 
-        // if(BLEManager::invalidCommandFlag(false ,false ,true) ==true){
-        if(BLEManager::getInvalidCommand() ==true){
-                BLEManager::sendInvalidCommandNotifications();
+        if (BLEManager::getInvalidCommand() == true)
+        {
+            BLEManager::sendInvalidCommandNotifications();
         }
 
-        if(RTCManager::executionTimeCheck() == true){
-            xTaskCreate(runProfile, "runProfile", 2048, NULL, 1, &runProfileHandle);        
+        if (RTCManager::executionTimeCheck() == true)
+        {
+            xTaskCreate(runProfile, "runProfile", 2048, NULL, 1, &runProfileHandle);
         }
 
-        RTCManager::printDateAndTime();       
+        RTCManager::printDateAndTime();
         vTaskDelay(pdMS_TO_TICKS(300));
     }
 }
 
-
-
-void profileHandlerTask(void *pvParameters) {   
-    while(1){ 
-        // if(MQTTManager::profileNameRecivedFlag(false ,false ,true) == true){
-            if(MQTTManager::getProfileNameRecived() == true){
-              HTTPManager::getProfile();
+void profileHandlerTask(void *pvParameters)
+{
+    while (1)
+    {
+        if (MQTTManager::getProfileNameRecived() == true)
+        {
+            HTTPManager::getProfile();
             //  ProfileManager::runProfile();
             //  ProfileManager::runSunriseProfile();
         }
-      vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
+        vTaskDelay(pdMS_TO_TICKS(10)); // Check every 5 seconds
     }
-
 }
 
-void OTAUpdateTask(void *pvParameters) {
-    MQTTManager::setOtaUpdateAvailable(false);   
+void OTAUpdateTask(void *pvParameters)
+{
+    MQTTManager::setOtaUpdateAvailable(false);
     otaManage.beginHttpOTA();
-    vTaskDelete(NULL);  
+    vTaskDelete(NULL);
 }
 
-void mqttHandlerTask(void *pvParameters) {   
-    while(1){ 
-      MQTTManager::loop();
-      // MQTTManager::publishLedStatePayload();
-      vTaskDelay(pdMS_TO_TICKS(10));  // Check every 5 seconds           
+void mqttHandlerTask(void *pvParameters)
+{
+    while (1)
+    {
+        MQTTManager::loop();
+        // MQTTManager::publishLedStatePayload();
+        vTaskDelay(pdMS_TO_TICKS(10)); // Check every 5 seconds
     }
-
 }
 
-
-void networkScanner(void *pvParameters) {
+void networkScanner(void *pvParameters)
+{
     WiFiManager::networkScanner();
-    vTaskDelete(NULL);  
+    vTaskDelete(NULL);
 }
 
-void runProfile(void *pvParameters) {
+void runProfile(void *pvParameters)
+{
     ProfileManager::runSunriseProfile();
     ProfileManager::runProfile();
-    vTaskDelete(NULL);  
+    vTaskDelete(NULL);
 }
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
-
 
     FlashManager::init();
     BLEManager::init();
@@ -125,7 +129,6 @@ void setup() {
     xTaskCreate(mainTask, "mainTask", 2048, NULL, 2, NULL);
     xTaskCreate(mqttHandlerTask, "mqttHandlerTask", 2048, NULL, 1, NULL);
     xTaskCreate(profileHandlerTask, "profileHandlerTask", 2048, NULL, 1, NULL);
-
 }
 
 void loop() {}

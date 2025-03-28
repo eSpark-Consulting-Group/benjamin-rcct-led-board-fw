@@ -1,16 +1,9 @@
 #include "OTAManager.hpp"
 
+void OTAManager::beginHttpOTA()
+{
 
-
-
-
-
-
-void OTAManager::beginHttpOTA(){
-    
-
-    OTA.beginCloud(otaServerName , otaServerPath ,otaServerPort);
-
+    OTA.beginCloud(otaServerName, otaServerPath, otaServerPort);
 }
 
 OTAManager otaManage;

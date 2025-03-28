@@ -6,12 +6,13 @@
 
 #include "MQTTManager.hpp"
 
-
-typedef struct  {
+typedef struct
+{
     bool power;
     String effect;
 
-    struct {
+    struct
+    {
         String colorString;
         int coolWhite;
         int red;
@@ -22,21 +23,21 @@ typedef struct  {
     uint16_t brightness;
     uint16_t speed;
 
-    struct {
+    struct
+    {
         String version;
         String url;
-    }ota;
-    
+    } ota;
+
     uint16_t temperature;
 
-}LEDConfig ;
+} LEDConfig;
 
-
-
-class LED {
-  public:
-
-    static LED& getInstance() {
+class LED
+{
+public:
+    static LED &getInstance()
+    {
         static LED instance;
         return instance;
     }
@@ -50,16 +51,9 @@ class LED {
     static void init();
     static void configureLED();
 
-
-
-
-  private:
-    LED() {}  // Private constructor (singleton)
-    static void hexToCRW(const String& hex, int& red, int& green, int& blue) ;
+private:
+    LED() {} // Private constructor (singleton)
+    static void hexToCRW(const String &hex, int &red, int &green, int &blue);
     static void configBrightness();
     static void configColor();
-
-  
 };
-
-

@@ -16,10 +16,8 @@ public:
     static void loop();
     static void disconnect();
     static void publishLedStatePayload();
-    // static bool profileNameRecivedFlag( bool write , bool write_val ,bool read );
     static void setProfileNameRecived(bool value);
     static bool getProfileNameRecived() ;
-    // static bool  ledConfigRecievedFlag( bool write , bool write_val ,bool read);
     static void setLedConfigReceived(bool value);
     static bool getLedConfigReceived() ;
     static bool getOtaUpdateAvailable();

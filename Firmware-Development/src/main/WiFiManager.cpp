@@ -3,68 +3,56 @@
 String WiFiManager::wifiSsid = "";
 String WiFiManager::wifiPassword = "";
 
-bool credentialsReceived=false;
+bool credentialsReceived = false;
 
-
-
-void WiFiManager::init(){
+void WiFiManager::init()
+{
 
     connect();
 }
 
-
-// bool WiFiManager::( bool write , bool write_val ,bool read ){
-//     if(write == true){
-//         credentialsReceived= write_val;
-//     }
-//     else if(read == true){
-//       return(credentialsReceived);
-//     }
-//     return(credentialsReceived) ;
-// }
-
-void WiFiManager::setCredentialsReceived(bool value) {
+void WiFiManager::setCredentialsReceived(bool value)
+{
     credentialsReceived = value;
 }
 
-// Getter
-bool WiFiManager::getCredentialsReceived() {
+bool WiFiManager::getCredentialsReceived()
+{
     return credentialsReceived;
 }
 
-void WiFiManager::networkScanner(){
-    // BLEManager::commandRecievedFlag(true ,false ,false);
+void WiFiManager::networkScanner()
+{
     BLEManager::setCommandRecieved(false);
-    
+
     Serial.println("Scanning available networks...");
     Serial.println("** Scan Networks **");
     int numSsid = WiFi.scanNetworks();
-    if (numSsid == -1) {
+    if (numSsid == -1)
+    {
         Serial.println("Couldn't get a wifi connection");
-        while (true);
+        while (true)
+            ;
     }
     JSONManager::makeSSIDJSON(numSsid);
     // print the list of networks seen:
     Serial.print("number of available networks:");
     Serial.println(numSsid);
     BLEManager::setNotifySSID(true);
-    // BLEManager::notifySSIDFlag(true , true ,false );
-
 }
 
-bool WiFiManager::ssidExists(String ssid, String list) {
+bool WiFiManager::ssidExists(String ssid, String list)
+{
     return list.indexOf("\"" + ssid + "\"") != -1; // Check if SSID already exists
 }
 
+void WiFiManager::connect()
+{
 
-
-void WiFiManager::connect() {
-      
-    FlashManager::load_wifi_creds(wifiSsid , wifiPassword);
-  
+    FlashManager::load_wifi_creds(wifiSsid, wifiPassword);
 
     Serial.println("Connecting to Wi-Fi...");
-    
+
     char ssid_buf[wifiSsid.length() + 1];
     char pass_buf[wifiPassword.length() + 1];
 
@@ -77,71 +65,38 @@ void WiFiManager::connect() {
     unsigned long startAttemptTime = millis();
     const unsigned long timeout = WIFI_TIMEOUT_MS; // 5 seconds timeout
 
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout) {
+    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < timeout)
+    {
 
         Serial.print(".");
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
 
         BLEManager::updateDeviceStatus();
         Serial.println("\nWi-Fi Connected!");
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
         credentialsReceived = false;
-
-    } else {
-        MQTTManager::disconnect();       
-        BLEManager::updateDeviceStatus();   
+    }
+    else
+    {
+        MQTTManager::disconnect();
+        BLEManager::updateDeviceStatus();
         Serial.println("\nFailed to connect to Wi-Fi.");
     }
-    
 }
 
-// String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
-
-//     switch (thisType) {
-//         case SECURITY_OPEN:
-//             return "Open";
-//             break;
-//         case SECURITY_WEP_PSK:
-//             return "WEP";
-//             break;
-//         case SECURITY_WPA_TKIP_PSK:
-//             return "WPA TKIP";
-//             break;
-//         case SECURITY_WPA_AES_PSK:
-//             return "WPA AES";
-//             break;
-//         case SECURITY_WPA2_AES_PSK:
-//             return "WPA2 AES";
-//             break;
-//         case SECURITY_WPA2_TKIP_PSK:
-//             return "WPA2 TKIP";
-//             break;
-//         case SECURITY_WPA2_MIXED_PSK:
-//             return "WPA2 Mixed";
-//             break;
-//         case SECURITY_WPA_WPA2_MIXED:
-//             return "WPA/WPA2 AES";
-//             break;
-//         case SECURITY_WPA3_AES_PSK:
-//             return"WPA3 AES";
-//             break;
-//         case SECURITY_WPA2_WPA3_MIXED:
-//             return "WPA2/WPA3";
-//         default:
-//             return "Unknown";  // Handle unexpected encryption types
-//     }
-// }
-
-struct EncryptionType {
+struct EncryptionType
+{
     uint32_t type;
     String name;
 };
 
-String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
+String WiFiManager::printEncryptionTypeEx(uint32_t thisType)
+{
     static const EncryptionType encryptionTypes[] = {
         {SECURITY_OPEN, "Open"},
         {SECURITY_WEP_PSK, "WEP"},
@@ -152,12 +107,13 @@ String WiFiManager::printEncryptionTypeEx(uint32_t thisType) {
         {SECURITY_WPA2_MIXED_PSK, "WPA2 Mixed"},
         {SECURITY_WPA_WPA2_MIXED, "WPA/WPA2 AES"},
         {SECURITY_WPA3_AES_PSK, "WPA3 AES"},
-        {SECURITY_WPA2_WPA3_MIXED, "WPA2/WPA3"}
-    };
-    for (size_t i = 0; i < sizeof(encryptionTypes) / sizeof(encryptionTypes[0]); ++i) {
-        if (encryptionTypes[i].type == thisType) {
+        {SECURITY_WPA2_WPA3_MIXED, "WPA2/WPA3"}};
+    for (size_t i = 0; i < sizeof(encryptionTypes) / sizeof(encryptionTypes[0]); ++i)
+    {
+        if (encryptionTypes[i].type == thisType)
+        {
             return encryptionTypes[i].name;
         }
     }
-    return "Unknown";  // Handle unexpected encryption types
+    return "Unknown"; // Handle unexpected encryption types
 }

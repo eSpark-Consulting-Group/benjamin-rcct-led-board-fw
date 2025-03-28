@@ -7,16 +7,13 @@
 #include "HTTPManager.hpp"
 #include "FlashManager.hpp"
 
-class ProfileManager{
-  public:
-    static void runSunriseProfile();
-    static void runProfile();
+class ProfileManager
+{
+public:
+  static void runSunriseProfile();
+  static void runProfile();
 
-
-  private:
-    static void setLEDPWM(float coolWhiteDuty, float redDuty, float warmWhiteDuty) ;
-    static uint32_t timeDiff( uint32_t offsetAddress);
-
-
+private:
+  static void setLEDPWM(float coolWhiteDuty, float redDuty, float warmWhiteDuty);
+  static uint32_t timeDiff(uint32_t offsetAddress);
 };
-

@@ -124,15 +124,6 @@ bool MQTTManager::isConnected() {
     return client.connected();
 }
 
-// bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read ){
-//     if(write == true){
-//         profileRecivedFlag= write_val;
-//     }
-//     else if(read == true){
-//       return(profileRecivedFlag);
-//     }
-//     return(profileRecivedFlag) ;
-// }
 
 void MQTTManager::setProfileNameRecived(bool value) {
   profileRecivedFlag = value;
@@ -142,16 +133,6 @@ void MQTTManager::setProfileNameRecived(bool value) {
 bool MQTTManager::getProfileNameRecived()  {
   return profileRecivedFlag;
 }
-
-// bool MQTTManager::ledConfigRecievedFlag( bool write , bool write_val ,bool read){
-//     if(write == true){
-//         ledConfigRecieved= write_val;
-//     }
-//     else if(read == true){
-//       return(ledConfigRecieved);
-//     }
-//     return (ledConfigRecieved);
-// }
 
 void MQTTManager::setLedConfigReceived(bool value) {
   ledConfigRecieved = value;

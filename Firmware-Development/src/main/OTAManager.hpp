@@ -1,28 +1,24 @@
 #pragma once
 
-
-
 #include "httpOTA.hpp"
 #include "config.hpp"
 
+class OTAManager
+{
 
-class OTAManager{
+public:
+    void beginHttpOTA();
 
-    public:
-
-        void beginHttpOTA();
-
-    private:
-
-        const char *otaServerName= OTA_SERVER_DOMAIN_NAME;
-        const char *otaServerPath= OTA_SERVER_PATH;
-        uint16_t otaServerPort= OTA_SERVER_PORT;
-
+private:
+    const char *otaServerName = OTA_SERVER_DOMAIN_NAME;
+    const char *otaServerPath = OTA_SERVER_PATH;
+    uint16_t otaServerPort = OTA_SERVER_PORT;
 };
 
-struct {
+struct
+{
     String version;
     String url;
-}ota;
+} ota;
 
 extern OTAManager otaManage;

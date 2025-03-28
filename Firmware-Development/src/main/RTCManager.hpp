@@ -6,8 +6,8 @@
 
 #include "config.hpp"
 
-
-typedef struct{
+typedef struct
+{
   uint16_t year = DEFAULT_YEAR;
   uint8_t month = DEFAULT_MONTH;
   uint8_t day = DEFAULT_DAY;
@@ -15,62 +15,51 @@ typedef struct{
   uint8_t min = DEFAULT_MIN;
   uint8_t sec = DEFAULT_SEC;
 
-}CurrentTimeInfo;
+} CurrentTimeInfo;
 
-typedef struct{
+typedef struct
+{
 
   uint8_t desiredHour = DESIRED_WAKEUP_HOUR;
   uint8_t desiredMin = DESIRED_WAKEUP_MIN;
   uint8_t desiredSec = DESIRED_WAKEUP_SEC;
 
-}DesiredWakeUpTime;
+} DesiredWakeUpTime;
 
-typedef struct{
+typedef struct
+{
 
-  uint8_t executionHour ;
-  uint8_t executionMin ;
-  uint8_t executionSec ;
+  uint8_t executionHour;
+  uint8_t executionMin;
+  uint8_t executionSec;
 
-}ExecutionTime;
+} ExecutionTime;
 
+class RTCManager
+{
+public:
+  static RTCManager &getInstance()
+  {
+    static RTCManager instance;
+    return instance;
+  }
 
+  alarm_t alarm;
+  static struct tm *timeinfo;
 
-class RTCManager{
-  public:
+  CurrentTimeInfo crntimeinfo;
+  DesiredWakeUpTime destimeinfo;
+  ExecutionTime exectime;
 
-    static RTCManager& getInstance() {
-        static RTCManager instance;
-        return instance;
-    }
+  static void init();
+  static void disableAlarm(void);
+  static void enableAlarm();
+  static void syncRTCDateAndTime();
+  static void printDateAndTime(void);
+  static bool executionTimeCheck();
+  static void setExecutionTime();
 
-    alarm_t alarm;
-    static struct tm *timeinfo;
-
-    CurrentTimeInfo crntimeinfo;
-    DesiredWakeUpTime destimeinfo;
-    ExecutionTime exectime;
-
-    static void init();
-    static void disableAlarm(void);
-    static void enableAlarm();
-    static void syncRTCDateAndTime();
-    static void printDateAndTime(void);
-    static bool executionTimeCheck();
-    static void setExecutionTime();
-
-  private:
-    RTCManager() {}  // Private constructor (singleton)
-    static void rtcHandler(void) ;
-
+private:
+  RTCManager() {} // Private constructor (singleton)
+  static void rtcHandler(void);
 };
-
-
-
-
-
-
-
-
-
-
-
