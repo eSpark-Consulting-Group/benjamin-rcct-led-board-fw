@@ -32,7 +32,12 @@
 1. Open Arduino IDE and load your project.
 2. Click on **Sketch** > **Export Compiled Binary**.
 3. Locate the `.bin` file in the sketch folder (use **Sketch** > **Show Sketch Folder** to find it).
-4. Use this `.bin` file for the OTA update process.
+4. If the binary file is not found in the sketch folder, navigate to:
+   ```sh
+   C:\Users\{username}\AppData\Local\arduino\sketches\
+   ```
+5. Look for the most recently updated folder, then open it and find the file named km0_km4_image2.bin.
+6. Use this `.bin` file for the OTA update process.
 
 ## Step 1: Generate Metadata and Checksum for the Binary File
 1. Use the provided Python script `metaDataHeaderGen.py` to generate the checksum and metadata.
