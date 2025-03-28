@@ -73,14 +73,8 @@
 
 ## Step 4: Download the OTA Firmware
 
-### 4.1 Setup the Request
-- **Method:** `GET`
-- **URL:** `http://184.169.181.179:3004/api/ota`
-- **Supported File Format:** `.bin`
-
-### 4.2 Download the Firmware
-1. Send a `GET` request to the above URL.
-2. The uploaded firmware file will be available for download.
+### 4 Setup the Request
+1. The uploaded firmware file will be automatically downloaded as the POST API is hit to upload binaries
 
 ## Step 5: Trigger OTA Sequence
 1. After downloading the firmware file, initiate the OTA update process on your device.
