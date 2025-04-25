@@ -200,11 +200,10 @@ void MQTTManager::callback(char* topic, byte* payload, unsigned int length) {
 
     }
     else if(String(topic) == controltopic ){
-
-            if(JSONManager::parseJSON(message, "power").startsWith("true")){
+            if (JSONManager::parseJSON(message, "brightness").toInt() > 0){
                 LED::getInstance().ledconfig.power = true;
             }
-            else if(JSONManager::parseJSON(message, "power").startsWith("false")){
+            else if (JSONManager::parseJSON(message, "brightness").toInt() == 0){
                 LED::getInstance().ledconfig.power = false;
             }                               
 
