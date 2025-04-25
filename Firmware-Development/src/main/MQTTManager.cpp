@@ -151,14 +151,13 @@ bool MQTTManager::getOtaUpdateAvailable(){
     return(otaUpdateAvailable);
 }
 
-void handleControlTopics(const String &message)
+void handleControlTopics(const String message)
 {
-
-  if (JSONManager::parseJSON(message, "power").startsWith("true"))
+  if (JSONManager::parseJSON(message, "brightness").toInt() > 0)
   {
     LED::getInstance().ledconfig.power = true;
   }
-  else if (JSONManager::parseJSON(message, "power").startsWith("false"))
+  else if (JSONManager::parseJSON(message, "brightness").toInt() == 0)
   {
     LED::getInstance().ledconfig.power = false;
   }
@@ -179,14 +178,14 @@ void handleControlTopics(const String &message)
   ledConfigRecieved = true;
 }
 
-void handleProfileTopic(const String &message)
+void handleProfileTopic(const String message)
 {
   profileRecivedFlag = true;
   LED::getInstance().ledconfig.profileName = JSONManager::parseJSON(message, "profileName");
   Serial.println("Profile Name: " + LED::getInstance().ledconfig.profileName);
 }
 
-void handleOtaTopic(const String &message)
+void handleOtaTopic(const String message)
 {
   ota.version = JSONManager::parseJSON(message, "ota.version");
   ota.url = JSONManager::parseJSON(message, "ota.url");
@@ -195,13 +194,13 @@ void handleOtaTopic(const String &message)
   Serial.println("URL: " + ota.url);
 }
 
-void  handleOtaUpdate(const String &message){
+void  handleOtaUpdate(const String message){
   if (JSONManager::parseJSON(message, "message").startsWith("New OTA update available")) {
     otaUpdateAvailable = true;
   }
 }
 
-void  handleChunkTopic3Sub(const String &message){
+void  handleChunkTopic3Sub(const String message){
   if (receivedChunks == totalChunks) {
     Serial.println("All chunks received. Parsing JSON...");
     // TODO: Handle the parsed JSON data
@@ -210,7 +209,7 @@ void  handleChunkTopic3Sub(const String &message){
   }
 }
 
-void  handleChunkTopic2Sub(const String &message){
+void  handleChunkTopic2Sub(const String message){
   totalChunks = message.toInt();
   receivedChunks = 0;
   fileBuffer = "";  // Reset buffer

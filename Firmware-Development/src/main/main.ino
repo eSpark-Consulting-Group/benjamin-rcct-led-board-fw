@@ -18,7 +18,7 @@ TaskHandle_t OTAUpdateTaskHandle = NULL;
 void mainTask(void *pvParameters)
 {
     vTaskDelay(pdMS_TO_TICKS(2000));
-
+    Serial.print(" hello baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaji");
     while (1)
     {
         if ((WiFiManager::getCredentialsReceived() == true || WiFi.status() != WL_CONNECTED))
