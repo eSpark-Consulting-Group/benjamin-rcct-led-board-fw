@@ -94,7 +94,7 @@ void MQTTManager::publishLedStatePayload(){
 
 }
 
-void MQTTManager::attemptConnection() {
+bool MQTTManager::attemptConnection() {
     conc();
     Serial.print("\r\nAttempting MQTT connection...");
               // Attempt to connect
@@ -110,6 +110,7 @@ void MQTTManager::attemptConnection() {
                   client.subscribe(otatopic);
                   client.subscribe(otaupdate);
                   // client.publish(devicetopic, devicetopic_payload);
+                  return true;
 
               } else {
                   BLEManager::updateDeviceStatus();
@@ -118,12 +119,15 @@ void MQTTManager::attemptConnection() {
                   Serial.println(" try again in 5 seconds");
                   //Wait 5 seconds before retrying
                   vTaskDelay(pdMS_TO_TICKS(5000)); 
+                  return false;
               }
 
 }
 
 bool MQTTManager::isConnected() {
-    return client.connected();
+    uint8_t ret= client.connected();
+    // Serial.print("[MQTTManager::isConnected] ret = ");Serial.println(ret);
+    return (ret);
 }
 
 bool MQTTManager::profileNameRecivedFlag( bool write , bool write_val ,bool read ){

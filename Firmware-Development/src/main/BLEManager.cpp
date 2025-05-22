@@ -5,7 +5,7 @@ bool commandRecieved= false;
 bool  notifySSID= false;
 bool invalidCommand =false;
 char macStr[MAC_STRING_SIZE];
-uint8_t connectionID;
+uint8_t  connectionID;
 int currentChunk = 0;  // To track which chunk to send
 
 BLEService WifiService(WIFI_SERVICE_UUID);

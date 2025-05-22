@@ -10,7 +10,7 @@
 class MQTTManager {
 public:
     static void init();
-    static void attemptConnection();
+    static bool attemptConnection();
     static bool isConnected();
     static void callback(char* topic, byte* payload, unsigned int length);
     static void loop();

@@ -20,6 +20,7 @@ WiFiClient client_new;
 
 
 void HTTPManager::getRealTime() {
+    Serial.println("[getRealTime] fetching from geo location");
     HttpClient http(client_new);
     ServerInfo serverInf;
 

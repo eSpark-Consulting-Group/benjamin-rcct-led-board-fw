@@ -89,8 +89,10 @@
 #define SSID_JSON_MAX_SIZE 200 
 
 //MQTT
-#define SERVER_IP "184.169.181.179"
-#define SERVER_PORT 1883
+// #define SERVER_IP "184.169.181.179"
+#define SERVER_IP "3.74.237.99" //HiveMQ broker
+#define SERVER_PORT 1883        //HiveMQ broker port
+// #define SERVER_PORT 1883
 #define CLIENT_ID  "amebaClient"
 #define CHUNK_TOPIC_1_SUB "controller/filetransfer/chunk/#"
 #define CHUNK_TOPIC_2_SUB "controller/filetransfer/chunkCount"

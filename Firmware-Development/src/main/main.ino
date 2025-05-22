@@ -26,12 +26,13 @@ void mainTask(void* pvParameters) {
         }
 
         if (WiFi.status() == WL_CONNECTED && !MQTTManager::isConnected()) {
-
             HTTPManager::getRealTime();
             HTTPManager::extractDateAndTimeFromAPIResponse();
             RTCManager::syncRTCDateAndTime();
             RTCManager::setExecutionTime();
-            MQTTManager::attemptConnection();
+            if(MQTTManager::attemptConnection() == false){
+                Serial.println(" [mainTask] MQTT disconnected!!");
+            }
         }
 
         if ((MQTTManager::getOtaUpdateAvailable() == true)) {
